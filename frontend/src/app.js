@@ -4,8 +4,10 @@ import axios from 'axios'
 import ReactMapboxGl, { Marker, Popup } from 'react-mapbox-gl'
 
 const Map = ReactMapboxGl({
-  accessToken: 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNqemI4emZydjA2dHIzYm80ZG96ZmQyN2wifQ.kVp6eB7AkWjslUOtsJyLDQ'
+  accessToken: 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
 })
+
+const mapboxToken = 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
 
 class App extends React.Component {
   constructor() {
@@ -13,35 +15,44 @@ class App extends React.Component {
     this.state = {
       allLocations: [],
       allLocationsCoordinates: null
+      // durationTimesToDestinationLocations: []
     }
-    this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
+    // this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
     this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
-    this.isolateLonLatAndConcat = this.isolateLonLatAndConcat.bind(this)
+    // this.isolateLonLatAndConcat = this.isolateLonLatAndConcat.bind(this)
   }
 
-  // componentDidMount() {
-  //
-  // }
+  componentDidMount() {
+    // THIS GRABS LOCATIONS STORED IN OUR DATABASE
+    axios.get('/api/locations/')
+      .then(res => this.setState(
+        { allLocations: res.data,
+          // THIS CREATES A STRING OF LONGITUDE AND LATITUDE WITH MAPBOX MATRIX API GET REQUEST FORMATING
+          allLocationsCoordinates: res.data.map(location => {
+            return `${location.lon},${location.lat};`
+          }).join('').slice(0, -1)
+          // THIS JOINS ALL THE LOCATIONS IN TO ONE LONG STRING TO SEND TO THE API
+        }))
+      .then()
+    // THERE WILL BE ONE TRAILING SEMICOLON YOU MUST REMOVE FOR THIS TO WORK
+  }
+
 
 // THIS USES "MAPBOX MATRIX API" TO DETERMINE THE CLOSEST PARK FROM A ARRAY OF LOCATIONS
+// Durations as an array of arrays that represent the matrix in row-major order. durations[i][j] gives the travel time from the ith source to the jth destination. All values are in seconds. The duration between the same coordinate is always 0. If a duration cannot be found, the result is null.
+// https://cors-anywhere.herokuapp.com/
   filterToFindClosestLocation() {
-    axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/mapbox/walking/${this.state.allLocationsCoordinates}`)
-  }
-
-// THIS GRABS LOCATIONS STORED IN OUR DATABASE
-  fetchLocationsFromDatabase() {
-    axios.get('/api/locations/')
-      .then(res => this.setState({ allLocations: res.data }))
-  }
-
-// THIS CREATES AN ARRAY OF THE LOCATION COORDINATES AND CONCATES THEM INTO A STRING
-  isolateLonLatAndConcat() {
-    const locationCoordinates = this.state.allLocations.forEach(location => {
-      this.setState({allLocationsLonLatCoordinatesString: this.state.allLocationsLonLatCoordinatesString.concat(`${location.lon}','${location.lat}';'`)})
-    })
+    axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/mapbox/walking/-0.088817,51.514271;${this.state.allLocationsCoordinates}?sources=0&destinations=1;2&access_token=pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ`)
+      .then(res => {
+        this.setState({durationTimesToDestinationLocations: res.data})
+      })
   }
 
   render() {
+    if (!this.state) return null
+    this.filterToFindClosestLocation()
+    console.log(this.state.allLocationsCoordinates)
+    console.log(this.state.durationTimesToDestinationLocations)
     return (
       <div>
         <h1>Goodbye cruel world.</h1>
