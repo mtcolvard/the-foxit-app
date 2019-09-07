@@ -2,6 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import axios from 'axios'
 import _ from 'lodash'
+import '@fortawesome/fontawesome-svg-core'
+import '@fortawesome/free-solid-svg-icons'
+import '@fortawesome/react-fontawesome'
+
 import ReactMapboxGl, { Marker, Popup, MapContext } from 'react-mapbox-gl'
 const Map = ReactMapboxGl({
   accessToken: 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
@@ -53,19 +57,34 @@ class App extends React.Component {
 
   filterToFindClosestLocation() {
     axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/directions-matrix/v1/mapbox/walking/-0.088817,51.514271;${this.state.allLocationsCoordinates}?sources=0&destinations=1;2&access_token=pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ`)
-      .then(res => this.setState({locationResponse: _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))}))
+      .then(res => this.setState({closestLocation:
+        res.data.destinations[_.indexOf(res.data.durations[0], _.min(res.data.durations[0]))].location
+      }))
   }
-// _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+
+  // _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+  // _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
   // const closestLocationTime = _.min(res.data.durations[0])
   // const closestLocation = _.indexOf(res.data.durations[0], closestLocationTime)
   // console.log(closestLocation)
   // console.log(closestLocationTime)
   // if (this.state.allLocations.length === 0) return null
   render() {
-    console.log(this.state.locationResponse)
+    console.log('location', this.state.closestLocation)
     return (
       <div>
-        <h1>Goodbye, cruel world.</h1>
+        <h1>Fox Me, Baby</h1>
+        <div>
+          <Map
+            center={this.state.closestLocation}
+            style="mapbox://styles/mapbox/streets-v9"
+            containerStyle={{
+              height: '56.25vh',
+              width: '100%'
+            }}
+          >
+          </Map>
+        </div>
       </div>
     )
   }
@@ -104,18 +123,6 @@ ReactDOM.render(
 //     })
 // }
 
-// <div>
-//   <Map
-//     center={[-0.088817, 51.514271]}
-//     style="mapbox://styles/mapbox/streets-v9"
-//     containerStyle={{
-//       height: '56.25vh',
-//       width: '100%'
-//     }}
-//   >
-//   </Map>
-// </div>
-//
 
 // {this.props.sendHappenings.map(happening =>
 //   <div key={happening._id}>
