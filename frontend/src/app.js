@@ -1,13 +1,26 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import axios from 'axios'
-import ReactMapboxGl, { Marker, Popup } from 'react-mapbox-gl'
-
+import _ from 'lodash'
+import ReactMapboxGl, { Marker, Popup, MapContext } from 'react-mapbox-gl'
 const Map = ReactMapboxGl({
   accessToken: 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
 })
-
 const mapboxToken = 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
+
+// const Map = ReactMapboxGL({ /* factory options */ });
+
+// const MyMap = () => (
+//   <Map style="your-style-here">
+//     <MapContext.Consumer>
+//       {(map) => {
+//         // use `map` here
+//       }}
+//     </MapContext.Consumer>
+//   </Map>
+// );
+
+
 
 class App extends React.Component {
   constructor() {
@@ -18,7 +31,7 @@ class App extends React.Component {
       // durationTimesToDestinationLocations: []
     }
     // this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
-    // this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
+    this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
     // this.isolateLonLatAndConcat = this.isolateLonLatAndConcat.bind(this)
   }
 
@@ -31,28 +44,28 @@ class App extends React.Component {
           allLocationsCoordinates: res.data.map(location => {
             return `${location.lon},${location.lat};`
           }).join('').slice(0, -1)
-          // THIS JOINS ALL THE LOCATIONS IN TO ONE LONG STRING TO SEND TO THE API
         }))
       .then(() => this.filterToFindClosestLocation())
-    // THERE WILL BE ONE TRAILING SEMICOLON YOU MUST REMOVE FOR THIS TO WORK
   }
 
   // THIS USES "MAPBOX MATRIX API" TO DETERMINE THE CLOSEST PARK FROM A ARRAY OF LOCATIONS
   // Durations as an array of arrays that represent the matrix in row-major order. durations[i][j] gives the travel time from the ith source to the jth destination. All values are in seconds. The duration between the same coordinate is always 0. If a duration cannot be found, the result is null.
 
   filterToFindClosestLocation() {
-    axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/mapbox/walking/-0.088817,51.514271;${this.state.allLocationsCoordinates}?sources=0&destinations=1;2&access_token=pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ`)
-      .then(res => {
-        this.setState({durationTimesToDestinationLocations: res.data})
-      })
+    axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/directions-matrix/v1/mapbox/walking/-0.088817,51.514271;${this.state.allLocationsCoordinates}?sources=0&destinations=1;2&access_token=pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ`)
+      .then(res => this.setState({locationResponse: _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))}))
   }
-
+// _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+  // const closestLocationTime = _.min(res.data.durations[0])
+  // const closestLocation = _.indexOf(res.data.durations[0], closestLocationTime)
+  // console.log(closestLocation)
+  // console.log(closestLocationTime)
   // if (this.state.allLocations.length === 0) return null
   render() {
-    console.log(this.state.durationTimesToDestinationLocations)
+    console.log(this.state.locationResponse)
     return (
       <div>
-        <h1>Goodbye cruel world.</h1>
+        <h1>Goodbye, cruel world.</h1>
       </div>
     )
   }
