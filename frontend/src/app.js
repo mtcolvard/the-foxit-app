@@ -6,25 +6,12 @@ import '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/free-solid-svg-icons'
 import '@fortawesome/react-fontawesome'
 
-import ReactMapboxGl, { Marker, Popup, MapContext } from 'react-mapbox-gl'
+import ReactMapboxGl, { Layer, Feature } from 'react-mapbox-gl'
 const Map = ReactMapboxGl({
   accessToken: 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
 })
-const mapboxToken = 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
 
-// const Map = ReactMapboxGL({ /* factory options */ });
-
-// const MyMap = () => (
-//   <Map style="your-style-here">
-//     <MapContext.Consumer>
-//       {(map) => {
-//         // use `map` here
-//       }}
-//     </MapContext.Consumer>
-//   </Map>
-// );
-
-
+const startCoordinates = '-0.088817,51.514271'
 
 class App extends React.Component {
   constructor() {
@@ -36,41 +23,42 @@ class App extends React.Component {
     }
     // this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
     this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
+    this.getWalkingRoute = this.getWalkingRoute.bind(this)
     // this.isolateLonLatAndConcat = this.isolateLonLatAndConcat.bind(this)
   }
 
   componentDidMount() {
     // THIS GRABS LOCATIONS STORED IN OUR DATABASE
     axios.get('/api/locations/')
-      .then(res => this.setState(
-        { allLocations: res.data,
-          // THIS CREATES A STRING OF LONGITUDE AND LATITUDE WITH MAPBOX MATRIX API GET REQUEST FORMATING
-          allLocationsCoordinates: res.data.map(location => {
-            return `${location.lon},${location.lat};`
-          }).join('').slice(0, -1)
-        }))
+      // THIS CREATES A STRING OF LONGITUDE AND LATITUDE WITH MAPBOX MATRIX API GET REQUEST FORMATING
+      .then(res => this.setState({
+        allLocations: res.data,
+        allLocationsCoordinates: res.data.map(({ lon, lat }) => `${lon},${lat}`).join(';')
+      }))
       .then(() => this.filterToFindClosestLocation())
+      .then(() => this.getWalkingRoute())
   }
 
   // THIS USES "MAPBOX MATRIX API" TO DETERMINE THE CLOSEST PARK FROM A ARRAY OF LOCATIONS
-  // Durations as an array of arrays that represent the matrix in row-major order. durations[i][j] gives the travel time from the ith source to the jth destination. All values are in seconds. The duration between the same coordinate is always 0. If a duration cannot be found, the result is null.
+  // BY FINDING THE INDEX NUMBER OF THE ROUTE WITH THE SHORTEST DURATION IN SECONDS IT THEN CALLS THE COORDINATES OF THAT INDEX.
 
   filterToFindClosestLocation() {
-    axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/directions-matrix/v1/mapbox/walking/-0.088817,51.514271;${this.state.allLocationsCoordinates}?sources=0&destinations=1;2&access_token=pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ`)
-      .then(res => this.setState({closestLocation:
-        res.data.destinations[_.indexOf(res.data.durations[0], _.min(res.data.durations[0]))].location
-      }))
+    return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.allLocationsCoordinates}?destinations=1;2`)
+      .then(res => {
+        const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+        const closestLocation = res.data.destinations[closestLocationIdx].location
+        return this.setState({ closestLocation })
+      })
   }
 
-  // _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
-  // _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
-  // const closestLocationTime = _.min(res.data.durations[0])
-  // const closestLocation = _.indexOf(res.data.durations[0], closestLocationTime)
-  // console.log(closestLocation)
-  // console.log(closestLocationTime)
-  // if (this.state.allLocations.length === 0) return null
+  getWalkingRoute() {
+    return axios.get(`/api/mapbox/directions/${startCoordinates};${this.state.closestLocation.join(',')}`)
+      .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
+  }
+
   render() {
-    console.log('location', this.state.closestLocation)
+
+    console.log(this.state)
     return (
       <div>
         <h1>Fox Me, Baby</h1>
@@ -83,10 +71,16 @@ class App extends React.Component {
               width: '100%'
             }}
           >
+            {this.state.directions && <Layer
+              type='line'
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': '#4790E5', 'line-width': 2 }}
+            >
+              <Feature coordinates={this.state.directions} />
+            </Layer>}
           </Map>
         </div>
-      </div>
-    )
+      </div>)
   }
 }
 
@@ -94,58 +88,3 @@ ReactDOM.render(
   <App />,
   document.getElementById('root')
 )
-
-
-// create a new promise
-// const promise = new Promise((resolve, reject) => {
-//   Films.find((err, films) => {
-//     if(err) return reject(err); // call `.catch` passing in the error
-//     return resolve(films); // call `.then` passing in the films
-//   });
-// });
-//
-// promise
-//   .then(films => console.log(films))
-//   .catch(err => console.log(err));
-
-// componentDidMount() {
-//   // THIS GRABS LOCATIONS STORED IN OUR DATABASE
-//   axios.get('/api/locations/')
-//     .then(res => {
-//       const allLocationsCoordinates= res.data.map(location => {
-//         return `${location.lon},${location.lat};`
-//       }).join('').slice(0, -1)
-//       // THIS JOINS ALL THE LOCATIONS IN TO ONE LONG STRING TO SEND TO THE API
-//       axios.get(`https://cors-anywhere.herokuapp.com/https://api.mapbox.com/mapbox/walking/-0.088817,51.514271;${allLocationsCoordinates}?sources=0&destinations=1;2&access_token=pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ`)
-//         .then(res => {
-//           this.setState({durationTimesToDestinationLocations: res.data})
-//         })
-//     })
-// }
-
-
-// {this.props.sendHappenings.map(happening =>
-//   <div key={happening._id}>
-//     <Marker
-//       coordinates={[happening.lon, happening.lat]}
-//       onClick={() => this.selectHappening(happening)}
-//       ariaRole='button'
-//     >
-//       {<span className="icon is-medium"><i className="fas fa-map-marker-alt"aria-hidden="true"></i></span>}
-//     </Marker>
-//     {this.state.selectedHappening === happening &&
-//       <Popup
-//         className="tile is-parent"
-//         key={happening._id}
-//         coordinates={[happening.lon, happening.lat]}
-//         offset={{
-//           'bottom-left': [12, -38],
-//           'bottom': [0, -38],
-//           'bottom-right': [-12, -38]}}>
-//         <article className="tile is-child">
-//           <p className="is-size-6">{happening.name}</p>
-//         </article>
-//       </Popup>
-//     }
-//   </div>
-// )}
