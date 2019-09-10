@@ -20,6 +20,7 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
 
 
+
 class MapMatrixView(APIView):
 
     def get(self, request, coords):

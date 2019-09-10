@@ -5,6 +5,8 @@ import _ from 'lodash'
 import '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/free-solid-svg-icons'
 import '@fortawesome/react-fontawesome'
+import MapboxGeocoder from 'mapbox-gl-geocoder'
+
 
 import ReactMapboxGl, { Layer, Feature } from 'react-mapbox-gl'
 const Map = ReactMapboxGl({
@@ -18,7 +20,9 @@ class App extends React.Component {
     super()
     this.state = {
       allLocations: [],
-      allLocationsCoordinates: null
+      allLocationsCoordinates: null,
+      closestLocation: null,
+      destinations: null
       // durationTimesToDestinationLocations: []
     }
     // this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
