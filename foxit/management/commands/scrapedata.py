@@ -20,8 +20,13 @@ class Command(BaseCommand):
         citymapper_href_edit3.reverse()
         citymapper_lon = citymapper_href_edit3.pop(0)
         citymapper_lat = citymapper_href_edit3.pop(0)
-        image = ([str(soup.find(id='photos').img)].pop().split('src="', 1)[1]).replace('"/>','')
-        image_formatted = ''.join(['http://www.londongardensonline.org.uk/', image])
+        citymapper_href_edit4 = f'{citymapper_lon},{citymapper_lat}'
+
+        if soup.find(id='photos') == None:
+            image_formatted = 'http://www.londongardensonline.org.uk/images/sitepics/THM033-site.jpg'
+        else:
+            image = ([str(soup.find(id='photos').img)].pop().split('src="', 1)[1]).replace('"/>','')
+            image_formatted = ''.join(['http://www.londongardensonline.org.uk/', image])
 
         data = {
             'name': soup.title.string,
@@ -36,12 +41,12 @@ class Command(BaseCommand):
             'borough': soup.find(id='basic').select("dt ~ dd:nth-of-type(8)")[0].string,
             'site_ownership': soup.find(id='basic').select("dt ~ dd:nth-of-type(9)")[0].string,
             'site_management': soup.find(id='basic').select("dt ~ dd:nth-of-type(10)")[0].string,
-            'open_to_public': soup.find(id='basic').select("dt ~ dd:nth-of-type(11)")[0].string.rstrip(),
-            'opening_times': soup.find(id='basic').select("dt ~ dd:nth-of-type(12)")[0].string.lstrip(),
+            # 'open_to_public': soup.find(id='basic').select("dt ~ dd:nth-of-type(11)")[0].string.rstrip(),
+            # 'opening_times': soup.find(id='basic').select("dt ~ dd:nth-of-type(12)")[0].string.lstrip(),
             'special_conditions': soup.find(id='basic').select("dt ~ dd:nth-of-type(13)")[0].string,
-            'facilities': soup.find(id='basic').select("dt ~ dd:nth-of-type(14)")[0].string,
+            # 'facilities': soup.find(id='basic').select("dt ~ dd:nth-of-type(14)")[0].string,
             'public_transportation': soup.find(id='basic').select("dt > dd")[1].string,
-            'lon_lat': citymapper_href_edit3,
+            'lon_lat': citymapper_href_edit4,
             'lon': citymapper_lon,
             'lat': citymapper_lat,
             'grid_reference': soup.find(id='further').select("dt ~ dd:nth-of-type(1)")[0].string.rstrip(),
