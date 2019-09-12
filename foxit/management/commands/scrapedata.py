@@ -41,8 +41,8 @@ class Command(BaseCommand):
             'borough': soup.find(id='basic').select("dt ~ dd:nth-of-type(8)")[0].string,
             'site_ownership': soup.find(id='basic').select("dt ~ dd:nth-of-type(9)")[0].string,
             'site_management': soup.find(id='basic').select("dt ~ dd:nth-of-type(10)")[0].string,
-            # 'open_to_public': soup.find(id='basic').select("dt ~ dd:nth-of-type(11)")[0].string.rstrip(),
-            # 'opening_times': soup.find(id='basic').select("dt ~ dd:nth-of-type(12)")[0].string.lstrip(),
+            'open_to_public': soup.find(id='basic').select("dt ~ dd:nth-of-type(11)")[0].string,
+            'opening_times': soup.find(id='basic').select("dt ~ dd:nth-of-type(12)")[0].string,
             'special_conditions': soup.find(id='basic').select("dt ~ dd:nth-of-type(13)")[0].string,
             # 'facilities': soup.find(id='basic').select("dt ~ dd:nth-of-type(14)")[0].string,
             'public_transportation': soup.find(id='basic').select("dt > dd")[1].string,
@@ -53,7 +53,7 @@ class Command(BaseCommand):
             'size_in_hectares': soup.find(id='further').select("dt ~ dd:nth-of-type(2)")[0].string,
             'image': image_formatted,
             'fuller_information': soup.find(id='fuller').p.get_text(),
-            'sources_consulted': soup.find(id='fuller').select("section > p")[1].string,
+            # 'sources_consulted': soup.find(id='fuller').select("section > p")[1].string,
         }
 
         location = Location(**data)
@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
     def handle(self, *_args, **_options):
 
-        x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?borough=%25&type=%25&keyword=&Submit=Search')
+        x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?type=%25&keyword=&borough=%25&offset=2400')
 
         soup = BeautifulSoup(x, 'html.parser')
 

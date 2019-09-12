@@ -34,7 +34,7 @@ class MapMatrixView(APIView):
         # calculate the closest and just send that back
         return Response(response.json())
 
-
+# COORDS IS EVERYTHING AFTER THE INTERNAL URL ROUTE WE CALL ON THE app.js AND THE DEFINE IN THE view.py IN THE FOXIT BACKEND
 class MapDirectionsView(APIView):
 
     def get(self, _request, coords):

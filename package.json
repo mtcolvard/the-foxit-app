@@ -17,6 +17,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.22",
     "@fortawesome/free-solid-svg-icons": "^5.10.2",
     "@fortawesome/react-fontawesome": "^0.1.4",
+    "@mapbox/mapbox-gl-directions": "^4.0.2",
     "axios": "^0.19.0",
     "babel-loader": "^8.0.6",
     "bulma": "^0.7.5",
@@ -36,6 +37,7 @@
     "requests": "^0.3.0",
     "sass-loader": "^7.3.1",
     "style-loader": "^1.0.0",
+    "styled-components": "^4.3.2",
     "webpack": "^4.39.2",
     "webpack-cli": "^3.3.7"
   },
