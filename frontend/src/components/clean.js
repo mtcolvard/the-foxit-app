@@ -15,20 +15,16 @@ import ReactMapboxGl, { Layer, Feature, ZoomControl, Popup, Marker } from 'react
 const Map = ReactMapboxGl({
   minZoom: 8,
   maxZoom: 15,
-  accessToken: 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
-})
-const accessToken = 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
-
 const startCoordinates = '-0.088817,51.514271'
 const endCoordinates = '0.015200,51.574998'
 
-// const mapStyle = {
-//   flex: 1
-// }
-//
-// const flyToOptions = {
-//   speed: 0.8
-// }
+const mapStyle = {
+  flex: 1
+}
+
+const flyToOptions = {
+  speed: 0.8
+}
 
 
 class App extends React.Component {
@@ -48,11 +44,8 @@ class App extends React.Component {
     this.selectLocation = this.selectLocation.bind(this)
     this.onStyleLoad = this.onStyleLoad.bind(this)
     this.getWalkingRoute = this.getWalkingRoute.bind(this)
-
-    // this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
+    this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
   }
-  // this.isolateLonLatAndConcat = this.isolateLonLatAndConcat.bind(this)
-  // this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
 
   componentDidMount() {
     // THIS GRABS LOCATIONS STORED IN OUR DATABASE
@@ -60,12 +53,12 @@ class App extends React.Component {
       // THIS CREATES A STRING OF LONGITUDE AND LATITUDE WITH MAPBOX MATRIX API GET REQUEST FORMATING
       .then(res => this.setState({
         allLocations: res.data
-        // allLocationsCoordinates: res.data.map(({ lon, lat }) => `${lon},${lat}`).join(''),
+        allLocationsCoordinates: res.data.map(({ lon, lat }) => `${lon},${lat}`).join(''),
       }))
       // .then(() => this.filterToFindClosestLocation())
       .then(() => this.getWalkingRoute())
   }
-  // oneLocationCoordinates: res.data[0].map(({ lon, lat }) => `${lon},${lat}`).join('')
+  oneLocationCoordinates: res.data[0].map(({ lon, lat }) => `${lon},${lat}`).join('')
   selectLocation(location) {
     return this.setState({ selectedLocation: location,
       center: [location.lon, location.lat],
@@ -80,17 +73,17 @@ class App extends React.Component {
   // THIS USES "MAPBOX MATRIX API" TO DETERMINE THE CLOSEST PARK FROM A ARRAY OF LOCATIONS
   // BY FINDING THE INDEX NUMBER OF THE ROUTE WITH THE SHORTEST DURATION IN SECONDS IT THEN CALLS THE COORDINATES OF THAT INDEX.
 
-  // filterToFindClosestLocation() {
-  //   return axios.get(`/api/mapbox/matrix/${startCoordinates}${this.state.allLocationsCoordinates}?destinations=12`)
-  //     .then(res => {
-  //       const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
-  //       const closestLocation = res.data.destinations[closestLocationIdx].location
-  //       return this.setState({ closestLocation })
-  //     })
-  // }
+  filterToFindClosestLocation() {
+    return axios.get(`/api/mapbox/matrix/${startCoordinates}${this.state.allLocationsCoordinates}?destinations=12`)
+      .then(res => {
+        const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+        const closestLocation = res.data.destinations[closestLocationIdx].location
+        return this.setState({ closestLocation })
+      })
+  }
 
   getWalkingRoute() {
-    // return axios.get(`/api/mapbox/directions/${startCoordinates}${this.state.closestLocation.join(',')}`)
+    return axios.get(`/api/mapbox/directions/${startCoordinates}${this.state.closestLocation.join(',')}`)
     return axios.get(`/api/mapbox/directions/${startCoordinates};${endCoordinates}`)
       .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
   }
