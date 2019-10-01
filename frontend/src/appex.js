@@ -1,3 +1,6 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 import axios from 'axios'
@@ -30,6 +33,14 @@ const endCoordinates = '0.015200,51.574998'
 //   speed: 0.8
 // }
 
+// const layoutLayer = { 'icon-image': 'foxyMarker' }
+//
+// // Create an image for the Layer
+// const image ='🌻'
+// // const image ='\f3c5'
+// const images: any = ['foxyMarker', image]
+//
+// <i className="fas fa-map-marker-alt"aria-hidden="true"></i>
 
 class App extends React.Component {
   constructor() {
@@ -39,8 +50,7 @@ class App extends React.Component {
       center: [-0.109970527, 51.52916347],
       zoom: [11],
       allLocations: [],
-      boundedLocationsCoordinates: [],
-      selectLocationCoordinates: [],
+      allLocationsCoordinates: null,
       closestLocation: null,
       destinations: null,
       selectedLocation: null
@@ -50,7 +60,7 @@ class App extends React.Component {
     this.onStyleLoad = this.onStyleLoad.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
 
-    this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
+    // this.filterToFindClosestLocation = this.filterToFindClosestLocation.bind(this)
   }
   // this.isolateLonLatAndConcat = this.isolateLonLatAndConcat.bind(this)
   // this.fetchLocationsFromDatabase = this.fetchLocationsFromDatabase.bind(this)
@@ -60,14 +70,13 @@ class App extends React.Component {
     axios.get('/api/locations/')
       // THIS CREATES A STRING OF LONGITUDE AND LATITUDE WITH MAPBOX MATRIX API GET REQUEST FORMATING
       .then(res => this.setState({
-
-        boundedLocationsCoordinates: res.data.slice(1,5).map(({ lon, lat }) => `${lon},${lat}`).join(';'),
-        selectLocationCoordinates: res.data.slice(1,5),
         allLocations: res.data
+        // allLocationsCoordinates: res.data.map(({ lon, lat }) => `${lon},${lat}`).join(''),
       }))
-      .then(() => this.filterToFindClosestLocation())
+      // .then(() => this.filterToFindClosestLocation())
       .then(() => this.getWalkingRoute())
   }
+  // oneLocationCoordinates: res.data[0].map(({ lon, lat }) => `${lon},${lat}`).join('')
   selectLocation(location) {
     return this.setState({ selectedLocation: location,
       center: [location.lon, location.lat],
@@ -79,23 +88,20 @@ class App extends React.Component {
   // THIS USES "MAPBOX MATRIX API" TO DETERMINE THE CLOSEST PARK FROM A ARRAY OF LOCATIONS
   // BY FINDING THE INDEX NUMBER OF THE ROUTE WITH THE SHORTEST DURATION IN SECONDS IT THEN CALLS THE COORDINATES OF THAT INDEX.
 
-  filterToFindClosestLocation() {
-    // return axios.get(`/api/mapbox/matrix/${startCoordinates}${this.state.boundedLocationsCoordinates}?destinations=all`)
-    // return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.selectLocationsCoordinates}?destinations=all`)
-    return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.boundedLocationsCoordinates}?destinations=all`)
-      .then(res => {
-        console.log(res.data.durations)
-        const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
-        const closeLocation = res.data.destinations[closestLocationIdx].location
-        return this.setState({ closestLocation: closeLocation })
-      })
-  }
+  // filterToFindClosestLocation() {
+  //   return axios.get(`/api/mapbox/matrix/${startCoordinates}${this.state.allLocationsCoordinates}?destinations=12`)
+  //     .then(res => {
+  //       const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+  //       const closestLocation = res.data.destinations[closestLocationIdx].location
+  //       return this.setState({ closestLocation })
+  //     })
+  // }
 
-  getWalkingRoute() {
-    // return axios.get(`/api/mapbox/directions/${startCoordinates};${this.state.closestLocation.join(',')}`)
-    return axios.get(`/api/mapbox/directions/${startCoordinates};${endCoordinates}`)
-      .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
-  }
+  // getWalkingRoute() {
+  //   // return axios.get(`/api/mapbox/directions/${startCoordinates}${this.state.closestLocation.join(',')}`)
+  //   return axios.get(`/api/mapbox/directions/${startCoordinates};${endCoordinates}`)
+  //     .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
+  // }
 
   onStyleLoad(map)  {
     const { onStyleLoad } = this.props
@@ -126,9 +132,7 @@ class App extends React.Component {
   }
 
   render() {
-    console.log('select', this.state.selectLocationCoordinates)
-    console.log('bounded', this.state.boundedLocationsCoordinates)
-    console.log('closest', this.state.closestLocation)
+    console.log(this.state)
     const { fitBounds, center, zoom } = this.state
     return (
       <body>
@@ -162,15 +166,15 @@ class App extends React.Component {
                   <Feature coordinates={this.state.directions} />
                 </Layer>}
 
-                {this.state.selectLocationCoordinates.map(location =>
-                  <div key={location.id}>
-                    <Marker
-                      coordinates={[location.lon, location.lat]}
+                <Layer type="symbol" id="marker" layout={layoutLayer} images={images}>
+                  {this.state.allLocations.map(location =>
+                    <Feature
+                      key={location.id}
                       onClick={() => this.selectLocation(location)}
-                      ariaRole='button'
-                    >
-                      {<span className="icon is-medium"><i className="fas fa-map-marker-alt"aria-hidden="true"></i></span>}
-                    </Marker>
+                      coordinates={[location.lon, location.lat]}
+                    />
+                  )}
+                </Layer>
                     {this.state.selectedLocation === location &&
                       <div className="box">
                         <Popup
