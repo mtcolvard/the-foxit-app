@@ -62,6 +62,7 @@ class App extends React.Component {
       .then(res => this.setState({
 
         boundedLocationsCoordinates: res.data.slice(1,5).map(({ lon, lat }) => `${lon},${lat}`).join(';'),
+        boundedLocationsString: res.data.slice(1,5).map(({ lon, lat }) => `${lon},${lat}`).join(','),
         selectLocationCoordinates: res.data.slice(1,5),
         allLocations: res.data
       }))
@@ -80,20 +81,33 @@ class App extends React.Component {
   // BY FINDING THE INDEX NUMBER OF THE ROUTE WITH THE SHORTEST DURATION IN SECONDS IT THEN CALLS THE COORDINATES OF THAT INDEX.
 
   filterToFindClosestLocation() {
-    // return axios.get(`/api/mapbox/matrix/${startCoordinates}${this.state.boundedLocationsCoordinates}?destinations=all`)
-    // return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.selectLocationsCoordinates}?destinations=all`)
-    return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.boundedLocationsCoordinates}?destinations=all`)
+    // const re = /;/gi
+    // const str = `${this.state.boundedLocationsCoordinates}`
+    // console.log('str', str)
+    // const arr = Array.from(str.replace(re,','))
+    // console.log('arr', arr)
+    const boundedLocationsCount = this.state.boundedLocationsString.split(',').length/2
+    let destinationsString = ''
+    for(let i = 1; i <= boundedLocationsCount; i += 1) {
+      destinationsString += i + ';'
+    }
+    const destinationsStringFormatted = destinationsString.slice(0, -1)
+    console.log(destinationsStringFormatted)
+    return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.boundedLocationsCoordinates}?sources=0&destinations=${destinationsStringFormatted}`)
       .then(res => {
-        console.log(res.data.durations)
+        console.log('durations', res.data.durations)
+        console.log('destinations', res.data.destinations)
         const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
+        console.log('closestLocationIdx', closestLocationIdx)
         const closeLocation = res.data.destinations[closestLocationIdx].location
+        console.log('closeLocation', closeLocation)
         return this.setState({ closestLocation: closeLocation })
       })
   }
 
   getWalkingRoute() {
     // return axios.get(`/api/mapbox/directions/${startCoordinates};${this.state.closestLocation.join(',')}`)
-    return axios.get(`/api/mapbox/directions/${startCoordinates};${endCoordinates}`)
+    return axios.get(`/api/mapbox/directions/${startCoordinates};${this.state.closestLocation}`)
       .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
   }
 
