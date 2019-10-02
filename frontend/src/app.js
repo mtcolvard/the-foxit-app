@@ -81,26 +81,17 @@ class App extends React.Component {
   // BY FINDING THE INDEX NUMBER OF THE ROUTE WITH THE SHORTEST DURATION IN SECONDS IT THEN CALLS THE COORDINATES OF THAT INDEX.
 
   filterToFindClosestLocation() {
-    // const re = /;/gi
-    // const str = `${this.state.boundedLocationsCoordinates}`
-    // console.log('str', str)
-    // const arr = Array.from(str.replace(re,','))
-    // console.log('arr', arr)
     const boundedLocationsCount = this.state.boundedLocationsString.split(',').length/2
     let destinationsString = ''
     for(let i = 1; i <= boundedLocationsCount; i += 1) {
       destinationsString += i + ';'
     }
     const destinationsStringFormatted = destinationsString.slice(0, -1)
-    console.log(destinationsStringFormatted)
-    return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.boundedLocationsCoordinates}?sources=0&destinations=${destinationsStringFormatted}`)
+
+    return axios.get(`/api/mapbox/matrix/${startCoordinates};${this.state.boundedLocationsCoordinates}?`)
       .then(res => {
-        console.log('durations', res.data.durations)
-        console.log('destinations', res.data.destinations)
         const closestLocationIdx = _.indexOf(res.data.durations[0], _.min(res.data.durations[0]))
-        console.log('closestLocationIdx', closestLocationIdx)
         const closeLocation = res.data.destinations[closestLocationIdx].location
-        console.log('closeLocation', closeLocation)
         return this.setState({ closestLocation: closeLocation })
       })
   }
@@ -128,12 +119,12 @@ class App extends React.Component {
       },
       trackUserLocation: true
     }))
-    // .then(res => this.setState({liveLocation: res.data.features[0].geometry.coordinates}))
+      // .then(res => this.setState({liveLocation: res.data.features[0].geometry.coordinates}))
     // map.addControl(new MapboxDirections({
     //   accessToken: accessToken,
-    //   // marker: {
-    //   //   color: 'orange'
-    //   // },
+    //   marker: {
+    //     color: 'orange'
+    //   },
     //   ReactMapboxGl: ReactMapboxGl
     // }))
     return onStyleLoad && onStyleLoad(map)
@@ -145,7 +136,7 @@ class App extends React.Component {
     console.log('closest', this.state.closestLocation)
     const { fitBounds, center, zoom } = this.state
     return (
-      <body>
+      <main>
         <section className="hero">
           <div className="hero-body">
             <div className="container">
@@ -213,7 +204,7 @@ class App extends React.Component {
             </div>
           </div>
         </section>
-      </body>
+      </main>
     )
   }
 }

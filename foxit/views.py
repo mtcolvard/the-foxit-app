@@ -4,10 +4,12 @@ import requests
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-
 # from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 from .models import Location
 from .serializers import LocationSerializer
+
+
+
 
 class LocationList(ListCreateAPIView):
     queryset = Location.objects.all()
@@ -23,13 +25,15 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
 class MapMatrixView(APIView):
 
     def get(self, request, coords):
+        print(request, coords)
         params = {
             'sources': 0,
-            'destinations': request.GET.get('destinations'),
+            # 'destinations': request.GET.get('destinations'),
+            'destinations': '1;2;3;4',
             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
         }
         response = requests.get(f'https://api.mapbox.com/directions-matrix/v1/mapbox/walking/{coords}', params=params)
-
+        print(response.json())
         # calculate the closest and just send that back
         return Response(response.json())
 

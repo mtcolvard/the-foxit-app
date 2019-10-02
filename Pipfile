@@ -11,6 +11,7 @@ djangorestframework = "*"
 requests = "*"
 psycopg2-binary = "*"
 django-heroku = "*"
+django-import-export = "*"
 
 [requires]
 python_version = "3.7"
