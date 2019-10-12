@@ -1,6 +1,28 @@
 import math
 
 
+def midpoint(x1, y1, x2, y2):
+#Input values as degrees
+
+#Convert to radians
+    lat1 = math.radians(x1)
+    lon1 = math.radians(x2)
+    lat2 = math.radians(y1)
+    lon2 = math.radians(y2)
+
+
+    bx = math.cos(lat2) * math.cos(lon2 - lon1)
+    by = math.cos(lat2) * math.sin(lon2 - lon1)
+    lat3 = math.atan2(math.sin(lat1) + math.sin(lat2), \
+           math.sqrt((math.cos(lat1) + bx) * (math.cos(lat1) \
+           + bx) + by**2))
+    lon3 = lon1 + math.atan2(by, math.cos(lat1) + bx)
+
+    return [round(math.degrees(lat3), 2), round(math.degrees(lon3), 2)]
+
+
+
+
 class GeoLocation:
     '''
     Class representing a coordinate on a sphere, most likely Earth.
@@ -50,7 +72,7 @@ class GeoLocation:
         self._check_bounds()
 
     def __str__(self):
-        degree_sign= u'\N{DEGREE SIGN}'
+        degree_sign = u'\N{DEGREE SIGN}'
         return ("({0:.4f}deg, {1:.4f}deg) = ({2:.6f}rad, {3:.6f}rad)").format(
             self.deg_lat, self.deg_lon, self.rad_lat, self.rad_lon)
 
@@ -116,26 +138,26 @@ class GeoLocation:
             min_lon = GeoLocation.MIN_LON
             max_lon = GeoLocation.MAX_LON
 
-        return [ GeoLocation.from_radians(min_lat, min_lon) ,
-            GeoLocation.from_radians(max_lat, max_lon) ]
+        return [GeoLocation.from_radians(min_lat, min_lon),
+            GeoLocation.from_radians(max_lat, max_lon)]
 
 
 
-if __name__ == '__main__':
-    # Test degree to radian conversion
-    loc1 = GeoLocation.from_degrees(26.062951, -80.238853)
-    loc2 = GeoLocation.from_radians(loc1.rad_lat, loc1.rad_lon)
-    assert (loc1.rad_lat == loc2.rad_lat and loc1.rad_lon == loc2.rad_lon
-        and loc1.deg_lat == loc2.deg_lat and loc1.deg_lon == loc2.deg_lon)
-
-    # Test distance between two locations
-    loc1 = GeoLocation.from_degrees(26.062951, -80.238853)
-    loc2 = GeoLocation.from_degrees(26.060484,-80.207268)
-    assert loc1.distance_to(loc2) == loc2.distance_to(loc1)
-
-    # Test bounding box
-    loc = GeoLocation.from_degrees(26.062951, -80.238853)
-    distance = 1  # 1 kilometer
-    SW_loc, NE_loc = loc.bounding_locations(distance)
-    print loc.distance_to(SW_loc)
-    print loc.distance_to(NE_loc)
+# if __name__ == '__main__':
+#     # Test degree to radian conversion
+#     loc1 = GeoLocation.from_degrees(26.062951, -80.238853)
+#     loc2 = GeoLocation.from_radians(loc1.rad_lat, loc1.rad_lon)
+#     assert (loc1.rad_lat == loc2.rad_lat and loc1.rad_lon == loc2.rad_lon
+#         and loc1.deg_lat == loc2.deg_lat and loc1.deg_lon == loc2.deg_lon)
+#
+#     # Test distance between two locations
+#     loc1 = GeoLocation.from_degrees(26.062951, -80.238853)
+#     loc2 = GeoLocation.from_degrees(26.060484, -80.207268)
+#     assert loc1.distance_to(loc2) == loc2.distance_to(loc1)
+#
+#     # Test bounding box
+#     loc = GeoLocation.from_degrees(26.062951, -80.238853)
+#     distance = 1  # 1 kilometer
+#     SW_loc, NE_loc = loc.bounding_locations(distance)
+#     print(loc.distance_to(SW_loc))
+#     print(loc.distance_to(NE_loc))
