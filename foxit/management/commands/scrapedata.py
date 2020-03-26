@@ -43,8 +43,10 @@ class Command(BaseCommand):
             'site_management': soup.find(id='basic').select("dt ~ dd:nth-of-type(10)")[0].string,
             'open_to_public': soup.find(id='basic').select("dt ~ dd:nth-of-type(11)")[0].string,
             'opening_times': soup.find(id='basic').select("dt ~ dd:nth-of-type(12)")[0].string,
+        # 'special_conditions' is returning the entry for 'facilities' because special conditions has no elements in its <dd></dd> tags so its moving on to the next <dd> which is 'facilities'
             'special_conditions': soup.find(id='basic').select("dt ~ dd:nth-of-type(13)")[0].string,
             # 'facilities': soup.find(id='basic').select("dt ~ dd:nth-of-type(14)")[0].string,
+        # the only reason ("dt > dd")[1] works ... it shouldn't ...is because of an error in London Park's html. 'events' doesn't close out the <dt> tag so i think soup is parsing the tree as if everything following it is a 'dt' which is a child of a 'dt'
             'public_transportation': soup.find(id='basic').select("dt > dd")[1].string,
             'lon_lat': citymapper_href_edit4,
             'lon': citymapper_lon,
