@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand
-from bs4 import BeautifulSoup
+import re
 import urllib.request
+from bs4 import BeautifulSoup
+from django.core.management.base import BaseCommand
 from foxit.models import Location
 
 class Command(BaseCommand):
@@ -12,50 +13,73 @@ class Command(BaseCommand):
         # print(x.read())
         soup = BeautifulSoup(x, 'html.parser')
 
-        citymapper_href = soup.find(id='basic').a.get('href')
-        citymapper_href_edit1 = citymapper_href.replace('http://citymapper.com/directions?endcoord=', '')
-        sep = '&'
-        citymapper_href_edit2 = (citymapper_href_edit1.split(sep, 1)[0]).split(',')
-        citymapper_href_edit3 = [float(i) for i in citymapper_href_edit2]
-        citymapper_href_edit3.reverse()
-        citymapper_lon = citymapper_href_edit3.pop(0)
-        citymapper_lat = citymapper_href_edit3.pop(0)
-        citymapper_href_edit4 = f'{citymapper_lon},{citymapper_lat}'
+        citymapper_href = soup.find(href=re.compile("citymapper")).get('href')
+        citymapper_href_edit1 = citymapper_href.replace('http://citymapper.com/directions?endcoord=', '').split('&', 1)[0].split(',')
+        citymapper_href_edit2 = [float(i) for i in citymapper_href_edit1]
+        citymapper_href_edit2.reverse()
+        citymapper_lon = citymapper_href_edit2[0]
+        citymapper_lat = citymapper_href_edit2[1]
+        citymapper_lon_lat = f'{citymapper_lon},{citymapper_lat}'
 
         if soup.find(id='photos') == None:
             image_formatted = 'http://www.londongardensonline.org.uk/images/sitepics/THM033-site.jpg'
         else:
-            image = ([str(soup.find(id='photos').img)].pop().split('src="', 1)[1]).replace('"/>','')
+            image = ([str(soup.find(id='photos').img)].pop().split('src="', 1)[1]).replace('"/>', '')
             image_formatted = ''.join(['http://www.londongardensonline.org.uk/', image])
 
+        if soup.find("dt", string="Previous / Other name:") == None:
+            previous_name = None
+        else:
+            previous_name = soup.find("dt", string="Previous / Other name:").find_next("dd").string
+
+        name = soup.title.string
+        summary = soup.find(id='summary').p.string
+        site_location = soup.find("dt", string="Site location:").find_next("dd").string
+        postcode = soup.find("dt", string="Postcode:").find_next("dd").string.rstrip()
+        type_of_site = soup.find("dt", string="Type of site: ").find_next("dd").string
+        date = soup.find("dt", string="Date(s):").find_next("dd").string
+        designer = soup.find("dt", string="Designer(s):").find_next("dd").string
+        listed_structures = soup.find("dt", string="Listed structures:").find_next("dd").string
+        borough = soup.find("dt", string="Borough:").find_next("dd").string
+        site_ownership = soup.find("dt", string="Site ownership:").find_next("dd").string
+        site_management = soup.find("dt", string="Site management:").find_next("dd").string
+        open_to_public = soup.find("dt", string="Open to public? ").find_next("dd").string.rstrip()
+        opening_times = str(soup.find("dt", string="Opening times:").find_next("dd")).split('<b')[0].lstrip('<dd>').lstrip().split('</dd>')[0]
+        special_conditions = soup.find("dt", string="Special conditions:").find_next("dd").string
+        facilities = soup.find("dt", string="Facilities:").find_next("dd").string
+        public_transportation = soup.find("dt", string="Public transport:").find_next("dd").string
+        grid_reference = soup.find("dt", string="Grid ref: ").find_next("dd").string.rstrip()
+        size_in_hectares = soup.find("dt", string="Size in hectares:").find_next("dd").string
+        fuller_information = soup.find(id='fuller').p.get_text()
+        sources_consulted = soup.find("h4", string="Sources consulted:").find_next("p").string
+
+
         data = {
-            'name': soup.title.string,
-            'summary': soup.find(id='summary').p.string,
-            'previous_name': soup.find(id='basic').select("dt ~ dd:nth-of-type(1)")[0].string,
-            'site_location': soup.find(id='basic').select("dt ~ dd:nth-of-type(2)")[0].string,
-            'postcode': soup.find(id='basic').select("dt ~ dd:nth-of-type(3)")[0].string.rstrip(),
-            'type_of_site': soup.find(id='basic').select("dt ~ dd:nth-of-type(4)")[0].string,
-            'date': soup.find(id='basic').select("dt ~ dd:nth-of-type(5)")[0].string,
-            'designer': soup.find(id='basic').select("dt ~ dd:nth-of-type(6)")[0].string,
-            'listed_structures': soup.find(id='basic').select("dt ~ dd:nth-of-type(7)")[0].string,
-            'borough': soup.find(id='basic').select("dt ~ dd:nth-of-type(8)")[0].string,
-            'site_ownership': soup.find(id='basic').select("dt ~ dd:nth-of-type(9)")[0].string,
-            'site_management': soup.find(id='basic').select("dt ~ dd:nth-of-type(10)")[0].string,
-            'open_to_public': soup.find(id='basic').select("dt ~ dd:nth-of-type(11)")[0].string,
-            'opening_times': soup.find(id='basic').select("dt ~ dd:nth-of-type(12)")[0].string,
-        # 'special_conditions' is returning the entry for 'facilities' because special conditions has no elements in its <dd></dd> tags so its moving on to the next <dd> which is 'facilities'
-            'special_conditions': soup.find(id='basic').select("dt ~ dd:nth-of-type(13)")[0].string,
-            # 'facilities': soup.find(id='basic').select("dt ~ dd:nth-of-type(14)")[0].string,
-        # the only reason ("dt > dd")[1] works ... it shouldn't ...is because of an error in London Park's html. 'events' doesn't close out the <dt> tag so i think soup is parsing the tree as if everything following it is a 'dt' which is a child of a 'dt'
-            'public_transportation': soup.find(id='basic').select("dt > dd")[1].string,
-            'lon_lat': citymapper_href_edit4,
+            'name': name,
+            'summary': summary,
+            'previous_name': previous_name,
+            'site_location': site_location,
+            'postcode': postcode,
+            'type_of_site': type_of_site,
+            'date': date,
+            'designer': designer,
+            'listed_structures': listed_structures,
+            'borough': borough,
+            'site_ownership': site_location,
+            'site_management': site_management,
+            'open_to_public': open_to_public,
+            'opening_times': opening_times,
+            'special_conditions': special_conditions,
+            'facilities': facilities,
+            'public_transportation': public_transportation,
+            'lon_lat': citymapper_lon_lat,
             'lon': citymapper_lon,
             'lat': citymapper_lat,
-            'grid_reference': soup.find(id='further').select("dt ~ dd:nth-of-type(1)")[0].string.rstrip(),
-            'size_in_hectares': soup.find(id='further').select("dt ~ dd:nth-of-type(2)")[0].string,
+            'grid_reference': grid_reference,
+            'size_in_hectares': size_in_hectares,
             'image': image_formatted,
-            'fuller_information': soup.find(id='fuller').p.get_text(),
-            # 'sources_consulted': soup.find(id='fuller').select("section > p")[1].string,
+            'fuller_information': fuller_information,
+            'sources_consulted': sources_consulted,
         }
 
         location = Location(**data)
