@@ -23,6 +23,7 @@ def convert_to_radians(lon1, lat1, lon2, lat2):
     φ1 = math.radians(lat1)
     λ2 = math.radians(lon2)
     φ2 = math.radians(lat2)
+    return
 
 convert_to_radians(coordA[0], coordA[1], coordB[0], coordB[1])
 
