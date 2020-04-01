@@ -28,7 +28,6 @@ def convert_to_radians(lon1, lat1, lon2, lat2):
 convert_to_radians(coordA[0], coordA[1], coordB[0], coordB[1])
 
 def midpoint(λ1, φ1, λ2, φ2):
-#Input values as degrees
 
     bx = math.cos(φ2) * math.cos(λ2 - λ1)
     by = math.cos(φ2) * math.sin(λ2 - λ1)
