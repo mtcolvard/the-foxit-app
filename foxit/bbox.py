@@ -17,6 +17,7 @@ coordA = []
 coordB = []
 midpoint = []
 
+
 #Convert to radians
 def convert_to_radians(lon1, lat1, lon2, lat2):
     λ1 = math.radians(lon1)
