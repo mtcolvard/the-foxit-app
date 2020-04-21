@@ -54,6 +54,7 @@ class Command(BaseCommand):
         sources_consulted = soup.find("h4", string="Sources consulted:").find_next("p").string
 
 
+
         data = {
             'name': name,
             'summary': summary,
@@ -65,7 +66,7 @@ class Command(BaseCommand):
             'designer': designer,
             'listed_structures': listed_structures,
             'borough': borough,
-            'site_ownership': site_location,
+            'site_ownership': site_ownership,
             'site_management': site_management,
             'open_to_public': open_to_public,
             'opening_times': opening_times,

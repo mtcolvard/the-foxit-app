@@ -22,15 +22,6 @@ const accessToken = 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkz
 const startCoordinates = '-0.088817,51.514271'
 const endCoordinates = '0.015200,51.574998'
 
-// const mapStyle = {
-//   flex: 1
-// }
-//
-// const flyToOptions = {
-//   speed: 0.8
-// }
-
-
 class App extends React.Component {
   constructor() {
     super()
