@@ -25,10 +25,12 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
 class BoundingBox(APIView):
 
     def get(self, _request):
-        queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)
+        queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:25]
+        # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
+        # if len(queryset) >= 25
+        serializer = BoundingBoxSerializer(queryset, many=True)
         count = len(queryset)
         print(count)
-        serializer = BoundingBoxSerializer(queryset, many=True)
 
         return Response(serializer.data)
 
@@ -37,9 +39,9 @@ class MapMatrixView(APIView):
     def get(self, request, coords):
         print(request, coords)
         params = {
-            'sources': 0,
+            'sources': [0, 1],
             # 'destinations': request.GET.get('destinations'),
-            'destinations': '1;2;3;4',
+            # 'destinations': '1;2;3;4',
             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
         }
         response = requests.get(f'https://api.mapbox.com/directions-matrix/v1/mapbox/walking/{coords}', params=params)
