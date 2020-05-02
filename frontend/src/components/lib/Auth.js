@@ -1,4 +1,3 @@
-// https://github.com/FranciscoFHDias   project-4
 
 import jwt from  'jsonwebtoken'
 
