@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import LocationList, LocationDetail, MapMatrixView, MapDirectionsView, BoundingBox
+from .views import LocationList, LocationDetail, BoundingBox, MapMatrixView, MapDirectionsView, MapGeocoderView
 
 urlpatterns = [
     path('locations/', LocationList.as_view()),
@@ -8,4 +8,5 @@ urlpatterns = [
     path('boundingbox/', BoundingBox.as_view()),
     path('mapbox/matrix/<coords>', MapMatrixView.as_view()),
     path('mapbox/directions/<coords>', MapDirectionsView.as_view()),
+    path('mapbox/geocoder/<coords>', MapGeocoderView.as_view())
 ]

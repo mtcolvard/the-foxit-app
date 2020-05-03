@@ -7,6 +7,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 # from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer
+from mapbox import Geocoder
+
 
 lat_max = 51.527891009000015
 lat_min = 51.50989099099999
@@ -21,9 +23,7 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
-
 class BoundingBox(APIView):
-
     def get(self, _request):
         queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:25]
         # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
@@ -31,8 +31,8 @@ class BoundingBox(APIView):
         serializer = BoundingBoxSerializer(queryset, many=True)
         count = len(queryset)
         print(count)
-
         return Response(serializer.data)
+
 
 
 class MapMatrixView(APIView):
@@ -57,4 +57,12 @@ class MapDirectionsView(APIView):
             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
         }
         response = requests.get(f'https://api.mapbox.com/directions/v5/mapbox/walking/{coords}', params=params)
+        return Response(response.json())
+
+class MapGeocoderView(APIView):
+    def get(self, _request, coords):
+        geocoder = Geocoder(name='mapbox.places', access_token='pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ')
+        response = geocoder.forward(coords)
+        data = response.json()
+        print(data)
         return Response(response.json())
