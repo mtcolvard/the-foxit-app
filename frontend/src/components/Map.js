@@ -22,11 +22,13 @@ class Map extends React.Component {
     super()
     this.state = {
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12},
-      formData: {}
+      formData: {},
+      geocoderRes: {}
 
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
   handleMouseDown( {lngLat} ) {
@@ -41,13 +43,15 @@ class Map extends React.Component {
   }
 
   handleChange(e) {
-    const formData = { ...this.state.formData, [e.target.name]: e.target.value }
-    this.setState({ formData, error: '' })
+    this.setState({ formData: e.target.value, error: '' })
+    console.log('change', this.state.formData)
   }
 
   handleSubmit(e) {
     e.preventDefault()
-    console.log('return successful')
+    axios.get(`api/mapbox/geocoder/${this.state.formData}`)
+      .then(res => this.setState({geocoderRes: res.data}))
+    console.log('response', this.state.geocoderRes)
   }
 
 
