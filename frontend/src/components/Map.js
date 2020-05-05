@@ -4,15 +4,6 @@ import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 
-// const directionsLayer = {
-//   type: 'FeatureCollection',
-//   features: [
-//     {type: 'Feature', geometry: {type: 'LineString', coordinates: [[-0.083903, 51.518887], [-0.083903, 51.51862], [-0.085547, 51.51688], [-0.085652, 51.516838], [-0.086035, 51.516869], [-0.086637, 51.514809], [-0.087804, 51.514622], [-0.087283, 51.513905], [-0.088961, 51.513409], [-0.089538, 51.513367], [-0.092212, 51.512718], [-0.092505, 51.512611], [-0.093011, 51.510853], [-0.09496, 51.507351], [-0.095722, 51.503902], [-0.104775, 51.503708], [-0.106317, 51.503376], [-0.110179, 51.502075], [-0.11079, 51.500668], [-0.112453, 51.498886], [-0.113087, 51.499195]]}}
-//   ]
-// }
-
-
-
 const geolocateStyle = {
   position: 'absolute',
   top: 0,
@@ -26,7 +17,6 @@ const navigationControlStyle = {
 }
 
 const lngLat = [-0.084254, 51.518961]
-
 
 class Map extends React.Component {
   constructor() {
