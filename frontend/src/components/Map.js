@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactMapGl, {BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay} from 'react-map-gl'
+import ReactMapGl, {BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Feature} from 'react-map-gl'
 import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
@@ -17,13 +17,16 @@ const navigationControlStyle = {
 
 const lngLat = [-0.084254, 51.518961]
 
+
 class Map extends React.Component {
   constructor() {
     super()
     this.state = {
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12},
-      formData: {},
-      geocoderRes: {}
+      formData: null,
+      geocoderRes: {},
+      destinationLonLat: [],
+      originLonLat: [-0.084254, 51.518961]
 
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
@@ -50,8 +53,16 @@ class Map extends React.Component {
   handleSubmit(e) {
     e.preventDefault()
     axios.get(`api/mapbox/geocoder/${this.state.formData}`)
-      .then(res => this.setState({geocoderRes: res.data}))
-    console.log('response', this.state.geocoderRes)
+      .then(res => this.setState(
+        {formData: res.data['features'][0]['place_name'],
+          destinationLonLat: res.data['features'][0]['center']}))
+      .then(this.getWalkingRoute())
+      .then(console.log('response', this.state.formData))
+  }
+
+  getWalkingRoute() {
+    axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${this.state.destinationLonLat[0]},${this.state.destinationLonLat[1]}`)
+      .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
   }
 
 
@@ -63,8 +74,9 @@ class Map extends React.Component {
           <input
             className="input"
             type="text"
-            placeholder="Add destination to plan route"
+            placeholder='Add destination to plan route'
             onChange={this.handleChange}
+            value={`${(this.state.formData === null) ? '' : this.state.formData}`}
           />
         </form>
         <div>
@@ -75,6 +87,13 @@ class Map extends React.Component {
             width='100vw'
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
+            {this.state.directions && <Layer
+              type='line'
+              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+              paint={{ 'line-color': '#4790E5', 'line-width': 6 }}
+            >
+              <Feature coordinates={this.state.directions} />
+            </Layer>}
             <div>
               <GeolocateControl
                 style={geolocateStyle}

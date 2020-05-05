@@ -57,19 +57,19 @@ class MapDirectionsView(APIView):
             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
         }
         response = requests.get(f'https://api.mapbox.com/directions/v5/mapbox/walking/{coords}', params=params)
+        print(response.json())
         return Response(response.json())
 
 class MapGeocoderView(APIView):
-    def get(self, _request, coords, country='GB'):
+    def get(self, _request, searchQuery, bbox=None, country='GB'):
         params = {
             'limit': 1,
             'country': {country},
             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
         }
-        response = requests.get(f'https://api.mapbox.com/geocoding/v5/mapbox.places/{coords}.json', params=params)
-        print(response)
+        response = requests.get(f'https://api.mapbox.com/geocoding/v5/mapbox.places/{searchQuery}.json', params=params)
         data = response.json()
-        print(data)
+        # print(data)
         return Response(response.json())
 
 # class MapGeocoderView(APIView):

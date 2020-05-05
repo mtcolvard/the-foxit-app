@@ -8,5 +8,5 @@ urlpatterns = [
     path('boundingbox/', BoundingBox.as_view()),
     path('mapbox/matrix/<coords>', MapMatrixView.as_view()),
     path('mapbox/directions/<coords>', MapDirectionsView.as_view()),
-    path('mapbox/geocoder/<coords>', MapGeocoderView.as_view())
+    path('mapbox/geocoder/<searchQuery>', MapGeocoderView.as_view())
 ]
