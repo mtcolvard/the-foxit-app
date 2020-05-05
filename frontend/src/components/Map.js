@@ -1,7 +1,17 @@
 import React from 'react'
-import ReactMapGl, {BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Feature} from 'react-map-gl'
+import ReactMapGl, {BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
 import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
+
+
+// const directionsLayer = {
+//   type: 'FeatureCollection',
+//   features: [
+//     {type: 'Feature', geometry: {type: 'LineString', coordinates: [[-0.083903, 51.518887], [-0.083903, 51.51862], [-0.085547, 51.51688], [-0.085652, 51.516838], [-0.086035, 51.516869], [-0.086637, 51.514809], [-0.087804, 51.514622], [-0.087283, 51.513905], [-0.088961, 51.513409], [-0.089538, 51.513367], [-0.092212, 51.512718], [-0.092505, 51.512611], [-0.093011, 51.510853], [-0.09496, 51.507351], [-0.095722, 51.503902], [-0.104775, 51.503708], [-0.106317, 51.503376], [-0.110179, 51.502075], [-0.11079, 51.500668], [-0.112453, 51.498886], [-0.113087, 51.499195]]}}
+//   ]
+// }
+
+
 
 const geolocateStyle = {
   position: 'absolute',
@@ -56,18 +66,24 @@ class Map extends React.Component {
       .then(res => this.setState(
         {formData: res.data['features'][0]['place_name'],
           destinationLonLat: res.data['features'][0]['center']}))
-      .then(this.getWalkingRoute())
+      .then(() => this.getWalkingRoute())
       .then(console.log('response', this.state.formData))
   }
 
   getWalkingRoute() {
     axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${this.state.destinationLonLat[0]},${this.state.destinationLonLat[1]}`)
-      .then(res => this.setState({ directions: res.data.routes[0].geometry.coordinates }))
+      .then(res => this.setState({ directions: res.data.routes[0].geometry }))
   }
 
 
   render () {
-    const {viewport} = this.state
+    const {viewport, directions} = this.state
+    const directionsLayer = {
+      type: 'FeatureCollection',
+      features: [
+        {type: 'Feature', geometry: directions}
+      ]
+    }
     return (
       <div>
         <form onSubmit={this.handleSubmit}>
@@ -87,13 +103,14 @@ class Map extends React.Component {
             width='100vw'
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
-            {this.state.directions && <Layer
-              type='line'
-              layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-              paint={{ 'line-color': '#4790E5', 'line-width': 6 }}
-            >
-              <Feature coordinates={this.state.directions} />
-            </Layer>}
+            {this.state.directions && <Source id="my-data" type="geojson" data={directionsLayer}>
+              <Layer
+                type='line'
+                layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+                paint={{ 'line-color': '#4790E5', 'line-width': 6 }}
+              />
+            </Source>
+            }
             <div>
               <GeolocateControl
                 style={geolocateStyle}
