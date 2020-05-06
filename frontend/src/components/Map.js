@@ -23,7 +23,7 @@ class Map extends React.Component {
     super()
     this.state = {
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12},
-      formData: null,
+      formData: '',
       geocoderRes: {},
       destinationLonLat: [],
       originLonLat: [-0.084254, 51.518961]
@@ -65,9 +65,8 @@ class Map extends React.Component {
       .then(res => this.setState({ directions: res.data.routes[0].geometry }))
   }
 
-
   render () {
-    const {viewport, directions} = this.state
+    const {viewport, directions, formData} = this.state
     const directionsLayer = {
       type: 'FeatureCollection',
       features: [
@@ -82,7 +81,7 @@ class Map extends React.Component {
             type="text"
             placeholder='Add destination to plan route'
             onChange={this.handleChange}
-            value={`${(this.state.formData === null) ? '' : this.state.formData}`}
+            value={formData}
           />
         </form>
         <div>
@@ -93,7 +92,7 @@ class Map extends React.Component {
             width='100vw'
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
-            {this.state.directions && <Source id="my-data" type="geojson" data={directionsLayer}>
+            {directions && <Source id="my-data" type="geojson" data={directionsLayer}>
               <Layer
                 type='line'
                 layout={{ 'line-cap': 'round', 'line-join': 'round' }}

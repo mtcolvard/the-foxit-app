@@ -170,35 +170,29 @@ class App extends React.Component {
     return onStyleLoad && onStyleLoad(map)
   }
 
-  // {this.state.selectedLocation === location &&
-  //       <div className="box">
-  //         <Popup
-  //           key={location.id}
-  //           coordinates={[location.lon, location.lat]}
-  //           offset={{
-  //             'bottom-left': [12, -38],
-  //             'bottom': [0, -38],
-  //             'bottom-right': [-12, -38]}}>
-  //           <article className="art">
-  //             <p className="is-mobile is-size-2">{location.name}</p>
-  //             <figure className="image is-square">
-  //               <img src={location.image}/>
-  //             </figure>
-  //           </article>
-  //         </Popup>
-  //       </div>
-  // }
-  //
+  
+  bb_coords_NW = [origin[0] - lon_offset, origin[1] + lat_offset]
+    bb_coords_NE = [origin[0] + lon_offset, origin[1] + lat_offset]
+    bb_coords_SW = [origin[0] - lon_offset, origin[1] - lat_offset]
+    bb_coords_SE = [origin[0] + lon_offset, origin[1] - lat_offset]
+    print(bb_coords_NE, bb_coords_SE, bb_coords_SW, bb_coords_NW)
 
-  // {this.state.directions && <Layer
-  //   type='line'
-  //   layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-  //   paint={{ 'line-color': '#4790E5', 'line-width': 6 }}
-  // >
-  //   <Feature coordinates={this.state.directions} />
-  // </Layer>}
+    def find_route_waypoints(BoundingBox):
+        loop_count = 0
 
+        features_list = [features_list_dict_tower_hamlets['aa'], features_list_dict_tower_hamlets['bb'], features_list_dict_tower_hamlets['cc'], features_list_dict_tower_hamlets['dd'], features_list_dict_tower_hamlets['ee'], features_list_dict_tower_hamlets['ff'], features_list_dict_tower_hamlets['gg'], features_list_dict_tower_hamlets['hh']]
 
+        response = service.matrix(features_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
+        data = response.json()
+
+        # calculate the distance to each possible waypoint from both the origin and the destination
+        # for each potential waypoint in the features_list, sum its distance from both the origin and the destination and then find the waypoint with the smallest total distance.
+        # convert the sum_distances list into a dictionary to keep track of indexes relative to the features_list
+        # lets try converting distance from origin into a dictionary, sorting it, and then comparing it to the sum_distances_minus_average to find the lowest value from the set
+        distances_from_origin = data['distances'][0]
+        distances_from_destination = data['distances'][1]
+        sum_distances = list(map(add, distances_from_origin, distances_from_destination))
+        average_distance = sum(sum_distances[2::])/(len(sum_distances)-2)
 
   render() {
     console.log(this.state)
