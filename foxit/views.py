@@ -1,5 +1,6 @@
 # from django.http import Http404
 # from rest_framework.permissions import IsAuthenticatedOrReadOnly
+import math
 import requests
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,12 +10,6 @@ from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer
 from mapbox import Geocoder
 
-
-lat_max = 51.527891009000015
-lat_min = 51.50989099099999
-lon_max = -0.05666849820822398
-lon_min = -0.08559550179177602
-
 class LocationList(ListCreateAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
@@ -23,14 +18,26 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
+
+
 class BoundingBox(APIView):
-    def get(self, _request):
+    def get(self, _request, currentWaypoint):
+        bb_width = 500
+        # dick = currentWaypoint.split(',')
+        currentListWaypoint = [float(x) for x in currentWaypoint.split(',')]
+        lat_offset = (1/111111)*bb_width
+        lon_offset = 1/(111111*math.cos(math.radians(currentListWaypoint[1])))*bb_width
+        lat_max = currentListWaypoint[1] + lat_offset
+        lat_min = currentListWaypoint[1] - lat_offset
+        lon_max = currentListWaypoint[0] + lon_offset
+        lon_min = currentListWaypoint[0] - lon_offset
+
         queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:25]
-        # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
-        # if len(queryset) >= 25
+        # # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
+        # # if len(queryset) >= 25
         serializer = BoundingBoxSerializer(queryset, many=True)
         count = len(queryset)
-        print(count)
+        print(serializer.data)
         return Response(serializer.data)
 
 
@@ -63,7 +70,7 @@ class MapDirectionsView(APIView):
 class MapGeocoderView(APIView):
     def get(self, _request, searchQuery, bbox=None, country='GB'):
         params = {
-            'limit': 1,
+            # 'limit': 1,
             'country': {country},
             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
         }
