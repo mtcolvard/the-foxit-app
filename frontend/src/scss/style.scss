@@ -1,3 +1,5 @@
+@import '~bulma';
+
 html, body {
   margin: 0;
   font-family: sans-serif;
@@ -6,3 +8,13 @@ html, body {
 * {
   box-sizing: border-box;
 }
+
+.iconMenu {
+  height: 80px;
+}
+
+// button {
+//   height: 36px;
+//   line-height: 34px;
+//   padding: 0 12px;
+// }
