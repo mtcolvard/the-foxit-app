@@ -3,7 +3,8 @@ import ReactMapGl, {BaseControl, NavigationControl, GeolocateControl, LinearInte
 import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
-import SearchResponse from './SearchResponse'
+import DropDownDisplay from './DropDownDisplay'
+
 
 
 const geolocateStyle = {
@@ -20,7 +21,7 @@ const navigationControlStyle = {
 
 const lngLat = [-0.084254, 51.518961]
 
-const searchReponseDataStateDefault = {
+const searchReponseStateDefault = {
   type: null,
   query: [null],
   features: [
@@ -97,7 +98,8 @@ class Map extends React.Component {
   }
 
   dropDownData(data) {
-    this.setState({formData: data.place_name, destinationLonLat: data.center, searchResponseData: searchReponseDataStateDefault })
+    this.setState({formData: data.place_name, searchResponseData: searchReponseStateDefault })
+    this.getWalkingRoute(data.center)
     console.log('dropDownData', data)
   }
 
@@ -111,8 +113,8 @@ class Map extends React.Component {
   //
   // }
 
-  getWalkingRoute() {
-    axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${this.state.destinationLonLat[0]},${this.state.destinationLonLat[1]}`)
+  getWalkingRoute(data) {
+    axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
       .then(res => this.setState({ directions: res.data.routes[0].geometry }))
   }
 
@@ -126,6 +128,7 @@ class Map extends React.Component {
 
   render () {
     const {viewport, directions, formData, searchResponseData} = this.state
+    let indexNumber = 0
     const directionsLayer = {
       type: 'FeatureCollection',
       features: [
@@ -144,10 +147,16 @@ class Map extends React.Component {
           />
         </form>
         <div>
-          <SearchResponse
-            searchResponseData={searchResponseData}
-            selectDestination={this.dropDownData}
-          />
+          {searchResponseData.features.map(element =>
+            <div key={element.id}>
+              <DropDownDisplay
+                index={indexNumber++}
+                dropDownDisplayName={element.place_name}
+                searchResponseData={searchResponseData}
+                selectDestination={this.dropDownData}
+              />
+            </div>
+          )}
         </div>
         <div className="iconMenu">
           <button className="button">Search
