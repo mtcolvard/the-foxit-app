@@ -20,11 +20,21 @@ const navigationControlStyle = {
 
 const lngLat = [-0.084254, 51.518961]
 
+const searchReponseDataStateDefault = {
+  type: null,
+  query: [null],
+  features: [
+    {place_type: [null]}
+  ],
+  attribution: null
+}
+
 class Map extends React.Component {
   constructor() {
     super()
 
     this.state = {
+      index: null,
       originLonLat: [-0.084254, 51.518961],
       destinationLonLat: [],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
@@ -46,6 +56,7 @@ class Map extends React.Component {
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.dropDownData = this.dropDownData.bind(this)
   }
 
   componentDidMount() {
@@ -83,6 +94,11 @@ class Map extends React.Component {
       // .then(() => this.queryDbForClosestParks())
       .then(() => this.getWalkingRoute())
       .then(console.log('response', this.state.destinationLonLat))
+  }
+
+  dropDownData(data) {
+    this.setState({formData: data.place_name, destinationLonLat: data.center, searchResponseData: searchReponseDataStateDefault })
+    console.log('dropDownData', data)
   }
 
 
@@ -130,7 +146,7 @@ class Map extends React.Component {
         <div>
           <SearchResponse
             searchResponseData={searchResponseData}
-            selectDestination={this.handleSubmit}
+            selectDestination={this.dropDownData}
           />
         </div>
         <div className="iconMenu">

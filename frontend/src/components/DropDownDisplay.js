@@ -7,16 +7,17 @@ class DropDownDisplay extends React.Component {
   }
 
   handleClick(e) {
-    this.props.selectDestination(e)
+    this.props.selectDestination(this.props.searchResponseData.features[this.props.index])
+    console.log('handleClick', this.props.index)
   }
 
   render() {
-    const dropDownDisplay = this.props.dropDownDisplay
+    const dropDownDisplayName = this.props.dropDownDisplayName
     return(
       <div>
         <div className="container">
-          <div className="box" onClick={this.handleClick}>
-            {dropDownDisplay}
+          <div className="box"  onClick={this.handleClick}>
+            {dropDownDisplayName}
           </div>
         </div>
       </div>
@@ -24,17 +25,4 @@ class DropDownDisplay extends React.Component {
   }
 }
 
-
 export default DropDownDisplay
-
-// const DropDownDisplay = ({dropDownDisplay}) => {
-  //   return(
-    //     <div>
-    //       <div className="container">
-    //         <div className="box" onClick=>
-    //           {dropDownDisplay}
-    //         </div>
-    //       </div>
-    //     </div>
-    //   )
-    // }

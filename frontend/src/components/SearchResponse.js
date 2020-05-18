@@ -8,20 +8,22 @@ class SearchResponse extends React.Component {
     this.passthrough = this.passthrough.bind(this)
   }
 
-
   passthrough(e) {
     this.props.selectDestination(e)
   }
 
   render() {
     const searchResponseData = this.props.searchResponseData
+    let indexNumber = 0
     return(
       <div>
         {searchResponseData.features.map(element =>
           <div key={element.id}>
             <DropDownDisplay
-              dropDownDisplay={element.place_name}
+              dropDownDisplayName={element.place_name}
+              searchResponseData={searchResponseData}
               selectDestination={this.passthrough}
+              index={indexNumber++}
             />
           </div>
         )}
