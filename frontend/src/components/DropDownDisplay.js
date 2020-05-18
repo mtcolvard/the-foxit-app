@@ -12,11 +12,12 @@ class DropDownDisplay extends React.Component {
   }
 
   render() {
+    const displayBox = this.props.isSearchTriggered
     const dropDownDisplayName = this.props.dropDownDisplayName
     return(
       <div>
         <div className="container">
-          <div className="box"  onClick={this.handleClick}>
+          <div className={ displayBox ? 'box' : ''} onClick={this.handleClick}>
             {dropDownDisplayName}
           </div>
         </div>

@@ -36,6 +36,7 @@ class Map extends React.Component {
 
     this.state = {
       index: null,
+      isSearchTriggered: false,
       originLonLat: [-0.084254, 51.518961],
       destinationLonLat: [],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
@@ -89,20 +90,26 @@ class Map extends React.Component {
     e.preventDefault()
     axios.get(`api/mapbox/geocoder/${this.state.formData}`)
       .then(res => this.setState({
-        destinationLonLat: res.data['features'][0]['center'],
+        isSearchTriggered: !this.state.isSearchTriggered,
         searchResponseData: res.data
       }))
       // .then(() => this.queryDbForClosestParks())
-      .then(() => this.getWalkingRoute())
       .then(console.log('response', this.state.destinationLonLat))
   }
 
   dropDownData(data) {
-    this.setState({formData: data.place_name, searchResponseData: searchReponseStateDefault })
+    this.setState({
+      isSearchTriggered: !this.state.isSearchTriggered,
+      formData: data.place_name,
+      searchResponseData: searchReponseStateDefault })
     this.getWalkingRoute(data.center)
     console.log('dropDownData', data)
   }
 
+  getWalkingRoute(data) {
+    axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
+      .then(res => this.setState({ directions: res.data.routes[0].geometry }))
+  }
 
   // queryDbForClosestParks() {
   //   axios.get(`api/mapbox/matrix/${this.state.originLonLat}`)
@@ -113,22 +120,9 @@ class Map extends React.Component {
   //
   // }
 
-  getWalkingRoute(data) {
-    axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
-      .then(res => this.setState({ directions: res.data.routes[0].geometry }))
-  }
-
-  // getMap(map) {
-  //   map.addControl(
-  //     new MapboxGeocoder({
-  //       accessToken: mapboxgl.accessToken,
-  //       mapboxgl: mapboxgl
-  //     }))
-  // }
-
   render () {
-    const {viewport, directions, formData, searchResponseData} = this.state
-    let indexNumber = 0
+    const {viewport, directions, formData, searchResponseData, isSearchTriggered} = this.state
+    let dropDownIndexNumber = 0
     const directionsLayer = {
       type: 'FeatureCollection',
       features: [
@@ -147,15 +141,15 @@ class Map extends React.Component {
           />
         </form>
         <div>
-          {searchResponseData.features.map(element =>
-            <div key={element.id}>
-              <DropDownDisplay
-                index={indexNumber++}
-                dropDownDisplayName={element.place_name}
-                searchResponseData={searchResponseData}
-                selectDestination={this.dropDownData}
-              />
-            </div>
+          {searchResponseData.features.map((element, index) =>
+            <DropDownDisplay
+              key={element.id}
+              index={index}
+              dropDownDisplayName={element.place_name}
+              searchResponseData={searchResponseData}
+              selectDestination={this.dropDownData}
+              isSearchTriggered={isSearchTriggered}
+            />
           )}
         </div>
         <div className="iconMenu">
@@ -168,16 +162,16 @@ class Map extends React.Component {
           <ReactMapGl {...viewport}
             mapboxApiAccessToken={process.env.MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
-
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
-            {directions && <Source id="my-data" type="geojson" data={directionsLayer}>
-              <Layer
-                type='line'
-                layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-                paint={{ 'line-color': '#4790E5', 'line-width': 6 }}
-              />
-            </Source>
+            {directions &&
+              <Source id="my-data" type="geojson" data={directionsLayer}>
+                <Layer
+                  type='line'
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+                  paint={{ 'line-color': '#4790E5', 'line-width': 6 }}
+                />
+              </Source>
             }
             <div>
               <GeolocateControl
