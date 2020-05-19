@@ -35,7 +35,6 @@ class Map extends React.Component {
     super()
 
     this.state = {
-      index: null,
       isSearchTriggered: false,
       originLonLat: [-0.084254, 51.518961],
       destinationLonLat: [],
@@ -52,8 +51,8 @@ class Map extends React.Component {
           {place_type: [null]}
         ],
         attribution: null
-      }
-
+      },
+      closestWaypoints: [null]
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
@@ -61,14 +60,27 @@ class Map extends React.Component {
     this.dropDownData = this.dropDownData.bind(this)
   }
 
+
   componentDidMount() {
     axios.get(`api/boundingbox/${this.state.originLonLat}`)
       .then(res => this.setState({
-        closestWaypoints: res.data
+        closestWaypoints: res.data[0]
       }))
       .then(console.log('closestWaypoints', this.state.closestWaypoints))
 
   }
+
+  // THIS WILL NEED A PROMPT TO ASK FOR ORIGIN COORDINATES OR TO ALLOW GEOLOCATOR BEFORE DIRECTION SEARCH
+
+  // this.queryDbForClosestParks = this.queryDbForClosestParks.bind(this)
+  // queryDbForClosestParks() {
+  //   axios.get(`api/mapbox/matrix/${this.state.originLonLat}`)
+  //     .then(res => this.setState({
+  //       closestWaypoints: res.data
+  //     }))
+  //     .then(console.log('closestWaypoints', this.state.closestWaypoints))
+  // }
+
 
   handleMouseDown( {lngLat} ) {
     this.setState({viewport: {
@@ -97,6 +109,7 @@ class Map extends React.Component {
       .then(console.log('response', this.state.destinationLonLat))
   }
 
+
   dropDownData(data) {
     this.setState({
       isSearchTriggered: !this.state.isSearchTriggered,
@@ -111,14 +124,6 @@ class Map extends React.Component {
       .then(res => this.setState({ directions: res.data.routes[0].geometry }))
   }
 
-  // queryDbForClosestParks() {
-  //   axios.get(`api/mapbox/matrix/${this.state.originLonLat}`)
-  //     .then(res => this.setState({
-  //       closestWaypoints: res.data
-  //     }))
-  //     .then(console.log('closestWaypoints', this.state.closestWaypoints))
-  //
-  // }
 
   render () {
     const {viewport, directions, formData, searchResponseData, isSearchTriggered} = this.state

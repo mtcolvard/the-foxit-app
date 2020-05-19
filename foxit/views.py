@@ -18,12 +18,9 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
-
-
 class BoundingBox(APIView):
-    def get(self, _request, currentWaypoint):
+    def get(self, request, currentWaypoint):
         bb_width = 500
-        # dick = currentWaypoint.split(',')
         currentListWaypoint = [float(x) for x in currentWaypoint.split(',')]
         lat_offset = (1/111111)*bb_width
         lon_offset = 1/(111111*math.cos(math.radians(currentListWaypoint[1])))*bb_width
@@ -37,9 +34,15 @@ class BoundingBox(APIView):
         # # if len(queryset) >= 25
         serializer = BoundingBoxSerializer(queryset, many=True)
         count = len(queryset)
-        print(serializer.data)
-        return Response(serializer.data)
+        global coords_within_boundary_box
+        coords_within_boundary_box = serializer.data
 
+        features_list_dbResponse = {
+        
+        }
+
+        print(serializer.data[0])
+        return Response(serializer.data)
 
 
 class MapMatrixView(APIView):
