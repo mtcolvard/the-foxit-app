@@ -20,7 +20,7 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
 
 class BoundingBox(APIView):
     def get(self, _request, currentWaypoint, bbwidth):
-        bb_width = bbwidth
+        bb_width = int(bbwidth)
         currentListWaypoint = [float(x) for x in currentWaypoint.split(',')]
         lat_offset = (1/111111)*bb_width
         lon_offset = 1/(111111*math.cos(math.radians(currentListWaypoint[1])))*bb_width
@@ -42,7 +42,7 @@ class BoundingBox(APIView):
         for x in response_data:
             parks_within_boundary_box[x['id']] = [x['lon'], x['lat']]
 
-        print(parks_within_boundary_box)
+        # print(parks_within_boundary_box)
         return Response(serializer.data)
 
 
