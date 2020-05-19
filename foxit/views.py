@@ -9,6 +9,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer
 from mapbox import Geocoder
+from .matrixCalculations import MatrixCalculations
+
+from operator import add
+from mapbox import DirectionsMatrix
 
 class LocationList(ListCreateAPIView):
     queryset = Location.objects.all()
@@ -19,8 +23,8 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
 
 class BoundingBox(APIView):
-    def get(self, _request, currentWaypoint, bbwidth):
-        bb_width = int(bbwidth)
+    def get(self, _request, currentWaypoint, bounding_box_width):
+        bb_width = int(bounding_box_width)
         currentListWaypoint = [float(x) for x in currentWaypoint.split(',')]
         lat_offset = (1/111111)*bb_width
         lon_offset = 1/(111111*math.cos(math.radians(currentListWaypoint[1])))*bb_width
@@ -29,7 +33,7 @@ class BoundingBox(APIView):
         lon_max = currentListWaypoint[0] + lon_offset
         lon_min = currentListWaypoint[0] - lon_offset
 
-        queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:25]
+        queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:23]
         # # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
         # # if len(queryset) >= 25
         serializer = BoundingBoxSerializer(queryset, many=True)
@@ -37,17 +41,18 @@ class BoundingBox(APIView):
         print('count', count)
         response_data = serializer.data
         # THAT ^ IS A LIST OF DICTIONARIES CONTAINING PARK 'ID', 'NAME', & 'LON_LAT'
-        parks_within_boundary_box = {'origin': currentListWaypoint, 'destination': None}
+# !!!!! REMEMBER TO CHANGE DESTINATION BACK TO NONE !!!!!!!!!!!!!!!!!!!
+        # global parks_within_bounding_box
+        parks_within_bounding_box = {'origin': currentListWaypoint, 'destination': [-0.043618, 51.538311]}
         # CREATE A NEW DICTIONARY WITH THE 'ID' AND [LON,LAT] OF EACH PARK AS KEY:VALUE
         for x in response_data:
-            parks_within_boundary_box[x['id']] = [x['lon'], x['lat']]
+            parks_within_bounding_box[x['id']] = [x['lon'], x['lat']]
+            print('BBAPI parks within bounding box', parks_within_bounding_box)
+        MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box)
+        print(closest_waypoint)
 
-        # print(parks_within_boundary_box)
+        # print(parks_within_bounding_box)
         return Response(serializer.data)
-
-
-
-
 
 class MapMatrixView(APIView):
     def get(self, request, coords):
@@ -62,6 +67,21 @@ class MapMatrixView(APIView):
         print(response.json())
         # calculate the closest and just send that back
         return Response(response.json())
+
+#THIS IS THE ORIGINAL IMPLEMENTATION RECEIVING INSTRUCTIONS FROM THE FRONT END
+# class MapMatrixView(APIView):
+#     def get(self, request, coords):
+#         print(request, coords)
+#         params = {
+#             'sources': [0, 1],
+#             # 'destinations': request.GET.get('destinations'),
+#             # 'destinations': '1;2;3;4',
+#             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
+#         }
+#         response = requests.get(f'https://api.mapbox.com/directions-matrix/v1/mapbox/walking/{coords}', params=params)
+#         print(response.json())
+#         # calculate the closest and just send that back
+#         return Response(response.json())
 
 # COORDS IS EVERYTHING AFTER THE INTERNAL urls.py ROUTE WE CALL ON THE app.js AND THE DEFINE IN THIS view.py IN THE FOXIT BACKEND
 class MapDirectionsView(APIView):
