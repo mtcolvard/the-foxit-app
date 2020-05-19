@@ -62,7 +62,7 @@ class Map extends React.Component {
 
 
   componentDidMount() {
-    axios.get(`api/boundingbox/${this.state.originLonLat}`)
+    axios.get(`api/boundingbox/${this.state.originLonLat}/${1000}`)
       .then(res => this.setState({
         closestWaypoints: res.data[0]
       }))
