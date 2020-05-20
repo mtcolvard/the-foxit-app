@@ -23,15 +23,16 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
 
 class BoundingBox(APIView):
-    def get(self, _request, currentWaypoint, bounding_box_width):
+    def get(self, _request, currentWaypoint, destination, bounding_box_width):
         bb_width = int(bounding_box_width)
-        currentListWaypoint = [float(x) for x in currentWaypoint.split(',')]
+        currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
+        destinationArray = [float(x) for x in destination.split(',')]
         lat_offset = (1/111111)*bb_width
-        lon_offset = 1/(111111*math.cos(math.radians(currentListWaypoint[1])))*bb_width
-        lat_max = currentListWaypoint[1] + lat_offset
-        lat_min = currentListWaypoint[1] - lat_offset
-        lon_max = currentListWaypoint[0] + lon_offset
-        lon_min = currentListWaypoint[0] - lon_offset
+        lon_offset = 1/(111111*math.cos(math.radians(currentWaypointArray[1])))*bb_width
+        lat_max = currentWaypointArray[1] + lat_offset
+        lat_min = currentWaypointArray[1] - lat_offset
+        lon_max = currentWaypointArray[0] + lon_offset
+        lon_min = currentWaypointArray[0] - lon_offset
 
         queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:23]
         # # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
@@ -43,16 +44,16 @@ class BoundingBox(APIView):
         # THAT ^ IS A LIST OF DICTIONARIES CONTAINING PARK 'ID', 'NAME', & 'LON_LAT'
 # !!!!! REMEMBER TO CHANGE DESTINATION BACK TO NONE !!!!!!!!!!!!!!!!!!!
         # global parks_within_bounding_box
-        parks_within_bounding_box = {'origin': currentListWaypoint, 'destination': [-0.043618, 51.538311]}
+        parks_within_bounding_box = {'origin': currentWaypointArray, 'destination': destinationArray}
         # CREATE A NEW DICTIONARY WITH THE 'ID' AND [LON,LAT] OF EACH PARK AS KEY:VALUE
         for x in response_data:
             parks_within_bounding_box[x['id']] = [x['lon'], x['lat']]
             print('BBAPI parks within bounding box', parks_within_bounding_box)
-        MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box)
-        print(closest_waypoint)
+        matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box)
+        print('views closest_waypoint', matrix_result)
 
         # print(parks_within_bounding_box)
-        return Response(serializer.data)
+        return Response(matrix_result)
 
 class MapMatrixView(APIView):
     def get(self, request, coords):
