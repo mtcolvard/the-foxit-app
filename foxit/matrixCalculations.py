@@ -12,37 +12,42 @@ dict_of_waypoints = {}
 list_of_waypoints_names = []
 
 class MatrixCalculations:
-    def find_route_waypoints(self, parks_within_bounding_box):
+    def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
         loop_count = 0
 
-        features_list = parks_within_bounding_box.values()
+        parks_list = parks_within_bounding_box.values()
 
-        response = service.matrix(features_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
+        response = service.matrix(parks_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
         data = response.json()
 
-        # calculate the distance to each possible waypoint from both the origin and the destination
-        # for each potential waypoint in the features_list, sum its distance from both the origin and the destination and then find the waypoint with the smallest total distance.
-        # convert the sum_distances list into a dictionary to keep track of indexes relative to the features_list
         # lets try converting distance from origin into a dictionary, sorting it, and then comparing it to the sum_distances_minus_average to find the lowest value from the set
         distances_from_origin = data['distances'][0]
         distances_from_destination = data['distances'][1]
+
+        # for each potential waypoint in the parks_list, sum its distance from both the origin and the destination and calculate the average length of the distances.
         sum_distances = list(map(add, distances_from_origin, distances_from_destination))
         average_distance = sum(sum_distances[2::])/(len(sum_distances)-2)
 
+        # because the mapbox response snaps the lon_lat coord to nearest address on a road map create new dictionaries preserving our park keys, but one with the values of the distances to each park from the origin, and one with the total distance of a route going from the origin to the destination through that park
         distances_from_origin_dict = dict(zip(parks_within_bounding_box.keys(), distances_from_origin))
         sum_distances_dict = dict(zip(parks_within_bounding_box.keys(), sum_distances))
 
+        #  create a subset of the parks(waypoints) where the total distance of a route through them is less than the average total distance across all parks
         sum_distances_minus_average = {k:v-average_distance for (k, v) in sum_distances_dict.items()}
         waypoint_distances_closer_than_average = {k:v for (k, v) in sum_distances_minus_average.items() if v < 0}
-
         waypoint_distance_from_origin = {k:v for (k, v) in distances_from_origin_dict.items() if k in distances_from_origin_dict.keys() & waypoint_distances_closer_than_average.keys()}
         del waypoint_distance_from_origin['origin']
+
+        # find the closest park(waypoint)
         closest_waypoint = min(waypoint_distance_from_origin, key=waypoint_distance_from_origin.get)
+        print(closest_waypoint)
+        # update the dictionary of waypoints to include this new waypoint
         dict_of_waypoints.update({closest_waypoint: parks_within_bounding_box[closest_waypoint]})
-        print('MatrixCalc, closest waypoint', dict_of_waypoints)
+        print('MatrixCalc, dict of waypoints', dict_of_waypoints)
         list_of_waypoints_names.append(closest_waypoint)
         print('MatrixCalc, list of waypoint names', list_of_waypoints_names)
-        return closest_waypoint
-    #     features_list.remove(features_list[min_distance_index])
+        # return closest_waypoint
+        return data
+    #     parks_list.remove(parks_list[min_distance_index])
     #     # loop_count = loop_count + 1
     #     # print(list_of_waypoints)
