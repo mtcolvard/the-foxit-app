@@ -35,6 +35,7 @@ class Map extends React.Component {
     super()
 
     this.state = {
+      bounding_box_width: 500,
       isSearchTriggered: false,
       originLonLat: [-0.084254, 51.518961],
       destinationLonLat: [],
@@ -58,17 +59,19 @@ class Map extends React.Component {
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.dropDownData = this.dropDownData.bind(this)
+    this.sendDestinationToBackend = this.sendDestinationToBackend.bind(this)
+    // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
 
-  componentDidMount() {
-    axios.get(`api/boundingbox/${this.state.originLonLat}/${1000}`)
-      .then(res => this.setState({
-        closestWaypoints: res.data[0]
-      }))
-      .then(console.log('closestWaypoints', this.state.closestWaypoints))
-
-  }
+  // componentDidMount() {
+  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${this.state.bounding_box_width}`)
+  //     .then(res => this.setState({
+  //       closestWaypoints: res.data[0]
+  //     }))
+  //     .then(console.log('closestWaypoints', this.state.closestWaypoints))
+  //
+  // }
 
   // THIS WILL NEED A PROMPT TO ASK FOR ORIGIN COORDINATES OR TO ALLOW GEOLOCATOR BEFORE DIRECTION SEARCH
 
@@ -115,14 +118,25 @@ class Map extends React.Component {
       isSearchTriggered: !this.state.isSearchTriggered,
       formData: data.place_name,
       searchResponseData: searchReponseStateDefault })
-    this.getWalkingRoute(data.center)
-    console.log('dropDownData', data)
+    // this.getWalkingRoute(data.center)
+    this.sendDestinationToBackend(data.center)
+    console.log('dropDownData data.center', data.center)
   }
 
-  getWalkingRoute(data) {
-    axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
-      .then(res => this.setState({ directions: res.data.routes[0].geometry }))
+  sendDestinationToBackend(data) {
+    axios.get(`api/boundingbox/${this.state.originLonLat}/${data}/${this.state.bounding_box_width}`)
+      .then(res => this.setState({
+        closestWaypoints: res.data
+      }))
+      .then(console.log('closestWaypoints', this.state.closestWaypoints))
   }
+
+
+
+  // getWalkingRoute(data) {
+  //   axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
+  //     .then(res => this.setState({ directions: res.data.routes[0].geometry }))
+  // }
 
 
   render () {
