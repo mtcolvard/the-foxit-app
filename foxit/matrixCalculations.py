@@ -11,16 +11,16 @@ destination = [-0.043618, 51.538311]
 dict_of_waypoints = {}
 list_of_waypoints_names = []
 
+# """This pings the MapBox Matrix API to caluculate the distance to every park within a given bounding box distance of the current waypoint (which is initially the origin) and the distance from each of those parks to the destination.  It then sums to find the total distance to the destination through each park and averages the distances to create a subset of parks whose total distance is below the average.  Then it finds the closest park in that set to the current waypoint. This will be the closest park in the direction of the destination  It then calls the database to determine the next set of parks within the bounding box distance of that park"""
+
 class MatrixCalculations:
+    # def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
     def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
         loop_count = 0
 
-        parks_list = parks_within_bounding_box.values()
-
-        response = service.matrix(parks_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
+        parks_lonLat_list = parks_within_bounding_box.values()
+        response = service.matrix(parks_lonLat_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
         data = response.json()
-
-        # lets try converting distance from origin into a dictionary, sorting it, and then comparing it to the sum_distances_minus_average to find the lowest value from the set
         distances_from_origin = data['distances'][0]
         distances_from_destination = data['distances'][1]
 
@@ -40,14 +40,27 @@ class MatrixCalculations:
 
         # find the closest park(waypoint)
         closest_waypoint = min(waypoint_distance_from_origin, key=waypoint_distance_from_origin.get)
-        print(closest_waypoint)
+        print('closest_waypoint', closest_waypoint)
+
         # update the dictionary of waypoints to include this new waypoint
         dict_of_waypoints.update({closest_waypoint: parks_within_bounding_box[closest_waypoint]})
-        print('MatrixCalc, dict of waypoints', dict_of_waypoints)
         list_of_waypoints_names.append(closest_waypoint)
-        print('MatrixCalc, list of waypoint names', list_of_waypoints_names)
-        # return closest_waypoint
-        return data
+        closest_waypoint_lonLat = dict_of_waypoints[closest_waypoint]
+        matrix_response_dict = {
+        'distances_from_current_waypoint': [distances_from_origin_dict],
+        'dict_of_waypoints': [dict_of_waypoints],
+        'next_waypoint_id': closest_waypoint,
+        'next_waypoint_lonLat': closest_waypoint_lonLat}
+
+        return matrix_response_dict
+        # if distances_from_origin_dict['origin'] > bounding_box_width:
+        #     return closest_waypoint
+        # else:
+        #     return dict_of_waypoints
+
+        # print('closest waypoint name', closest_waypoint)
+        # print('MatrixCalc, dict of waypoints', dict_of_waypoints)
+        # print('MatrixCalc, list of waypoint names', list_of_waypoints_names)
     #     parks_list.remove(parks_list[min_distance_index])
     #     # loop_count = loop_count + 1
     #     # print(list_of_waypoints)

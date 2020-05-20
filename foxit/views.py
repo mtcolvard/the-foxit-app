@@ -24,10 +24,6 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
 
 class BoundingBox(APIView):
     def get(self, _request, currentWaypoint, destination, bounding_box_width):
-        loop_result = self.loop_to_find_next_waypoint(self, currentWaypoint, destination, bounding_box_width)
-        return Response(loop_result)
-
-    def loop_to_find_next_waypoint(self, _request, currentWaypoint, destination, bounding_box_width):
         bb_width = int(bounding_box_width)
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
@@ -51,13 +47,13 @@ class BoundingBox(APIView):
         parks_within_bounding_box = {'origin': currentWaypointArray, 'destination': destinationArray}
         # CREATE A NEW DICTIONARY WITH THE 'ID' AND [LON,LAT] OF EACH PARK AS KEY:VALUE
         for x in response_data:
-            parks_within_bounding_box[x['id']] = [x['lon'], x['lat']]
-            print('BBAPI parks within bounding box', parks_within_bounding_box)
+            parks_within_bounding_box[str(x['id'])] = [x['lon'], x['lat']]
         matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box, bounding_box_width)
-        print('views closest_waypoint', matrix_result)
+        print('matrix_result', matrix_result)
+        return Response(matrix_result)
 
         # print(parks_within_bounding_box)
-        return matrix_result
+        # return matrix_result
 
 class MapMatrixView(APIView):
     def get(self, request, coords):
