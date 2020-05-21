@@ -37,10 +37,6 @@ class MatrixCalculations:
         waypoint_distances_closer_than_average = {k:v for (k, v) in sum_distances_minus_average.items() if v < 0}
         waypoint_distance_from_origin = {k:v for (k, v) in distances_from_origin_dict.items() if k in distances_from_origin_dict.keys() & waypoint_distances_closer_than_average.keys()}
         del waypoint_distance_from_origin['origin']
-        if next_waypoint_id == None:
-            pass
-        else:
-            del waypoint_distance_from_origin[next_waypoint_id]
 
         # find the closest park(waypoint)
         closest_waypoint = min(waypoint_distance_from_origin, key=waypoint_distance_from_origin.get)
@@ -52,7 +48,7 @@ class MatrixCalculations:
         closest_waypoint_lonLat = dict_of_waypoints[closest_waypoint]
         matrix_response_dict = {
         'distances_from_current_waypoint': [distances_from_destination_dict],
-        'dict_of_waypoints': [dict_of_waypoints],
+        'dict_of_waypoints': dict_of_waypoints,
         'next_waypoint_id': closest_waypoint,
         'next_waypoint_lonLat': closest_waypoint_lonLat}
 

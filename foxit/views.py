@@ -1,6 +1,7 @@
 # from django.http import Http404
 # from rest_framework.permissions import IsAuthenticatedOrReadOnly
 import math
+import itertools
 import requests
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,6 +30,7 @@ class BoundingBox(APIView):
         destinationArray = [float(x) for x in destination.split(',')]
         distance_from_next_waypoint_to_destination = 600
         next_waypoint_id = None
+        dict_of_waypoints = {}
 
         while distance_from_next_waypoint_to_destination > bb_width:
             print('currentWaypointArray 1', currentWaypointArray)
@@ -46,17 +48,31 @@ class BoundingBox(APIView):
             count = len(queryset)
             print('count', count)
             response_data = serializer.data
+            print('response data', response_data)
             # THAT ^ IS A LIST OF DICTIONARIES CONTAINING PARK 'ID', 'NAME', & 'LON_LAT'
     # !!!!! REMEMBER TO CHANGE DESTINATION BACK TO NONE !!!!!!!!!!!!!!!!!!!
             # global parks_within_bounding_box
             parks_within_bounding_box = {'origin': currentWaypointArray, 'destination': destinationArray}
-            print('parks_within_bounding_box 1', parks_within_bounding_box)
+            print('parks_within_bounding_box initial', parks_within_bounding_box)
             # CREATE A NEW DICTIONARY WITH THE 'ID' AND [LON,LAT] OF EACH PARK AS KEY:VALUE
             for x in response_data:
                 parks_within_bounding_box[str(x['id'])] = [x['lon'], x['lat']]
-            print('parks_within_bounding_box 2', parks_within_bounding_box)
+
+    # THIS MAY BE AN INELEGANT WAY TO DO THIS.      
+            for x in dict_of_waypoints.keys():
+                if x in parks_within_bounding_box:
+                    parks_within_bounding_box.pop(x)
+
+
+            # reset_past_waypoint_values_to_none =  {k:v == None for (k,v) in dict_of_waypoints.items()}
+            # parks_within_bounding_box.update(reset_past_waypoint_values_to_none)
+            # for x in parks_within_bounding_box.values():
+            #     if x == False:
+            #         x.pop()
+            print('parks_within_bounding_box update', parks_within_bounding_box)
+
             # matrix_result returns 'distances_from_current_waypoint': [distances_from_origin_dict],
-            # 'dict_of_waypoints': [dict_of_waypoints],
+            # 'dict_of_waypoints': dict_of_waypoints,
             # 'next_waypoint_id': closest_waypoint,
             # 'next_waypoint_lonLat': closest_waypoint_lonLat}
             matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box, bounding_box_width, next_waypoint_id)
@@ -71,6 +87,7 @@ class BoundingBox(APIView):
             print('next_waypoint_id', next_waypoint_id)
             parks_within_bounding_box.clear()
 
+            dict_of_waypoints = matrix_result['dict_of_waypoints']
             print('dict_of_waypoints', matrix_result['dict_of_waypoints'])
 
 
