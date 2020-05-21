@@ -1,7 +1,7 @@
-matrix_result = {'distances_from_waypoint': [{'origin': 0.0, 'destination': 5421.1, '866': 431.0, '910': 742.2, '1095': 880.2, '1350': 514.5, '1369': 577.4, '1385': 555.8, '1518': 387.8, '1521': 398.3, '1850': 577.4, '2003': 722.1, '2629': 508.1, '2643': 624.4, '2767': 666.4}], 'dict_of_waypoints': [{'1518': [-0.087419024791445, 51.517718896902]}], 'closest_waypoint_id': '1518', 'closest_waypoint_lonLat': [-0.087419024791445, 51.517718896902]}
+matrix_result = {'distances_from_waypoint': [{'origin': 0.0, 'destination': 5421.1, '866': 431.0, '910': 742.2, '1095': 880.2, '1350': 514.5, '1369': 577.4, '1385': 555.8, '1518': 387.8, '1521': 398.3, '1850': 577.4, '2003': 722.1, '2629': 508.1, '2643': 624.4, '2767': 666.4}], 'dict_of_waypoints': [{'1518': [-0.087419024791445, 51.517718896902]}], 'next_waypoint_id': '1518', 'next_waypoint_lonLat': [-0.087419024791445, 51.517718896902]}
 
-currentWaypointArray = [float(x) for x in matrix_result[next_waypoint_lonLat]]
-print(currentWaypointArray)
+distance_from_next_waypoint_to_destination = matrix_result['distances_from_waypoint'][0][matrix_result['next_waypoint_id']]
+print(distance_from_next_waypoint_to_destination)
 
 
 

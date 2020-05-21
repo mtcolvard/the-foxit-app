@@ -37,7 +37,7 @@ class Map extends React.Component {
     this.state = {
       bounding_box_width: 500,
       isSearchTriggered: false,
-      originLonLat: [-0.084254, 51.518961],
+      originLonLat: [-0.061720, 51.494294],
       destinationLonLat: [],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
         height: 'calc(100vh - 80px)',

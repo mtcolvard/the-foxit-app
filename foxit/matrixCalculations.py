@@ -15,8 +15,7 @@ list_of_waypoints_names = []
 
 class MatrixCalculations:
     # def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
-    def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
-        loop_count = 0
+    def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width, next_waypoint_id):
 
         parks_lonLat_list = parks_within_bounding_box.values()
         response = service.matrix(parks_lonLat_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
@@ -30,6 +29,7 @@ class MatrixCalculations:
 
         # because the mapbox response snaps the lon_lat coord to nearest address on a road map create new dictionaries preserving our park keys, but one with the values of the distances to each park from the origin, and one with the total distance of a route going from the origin to the destination through that park
         distances_from_origin_dict = dict(zip(parks_within_bounding_box.keys(), distances_from_origin))
+        distances_from_destination_dict = dict(zip(parks_within_bounding_box.keys(), distances_from_destination))
         sum_distances_dict = dict(zip(parks_within_bounding_box.keys(), sum_distances))
 
         #  create a subset of the parks(waypoints) where the total distance of a route through them is less than the average total distance across all parks
@@ -37,6 +37,10 @@ class MatrixCalculations:
         waypoint_distances_closer_than_average = {k:v for (k, v) in sum_distances_minus_average.items() if v < 0}
         waypoint_distance_from_origin = {k:v for (k, v) in distances_from_origin_dict.items() if k in distances_from_origin_dict.keys() & waypoint_distances_closer_than_average.keys()}
         del waypoint_distance_from_origin['origin']
+        if next_waypoint_id == None:
+            pass
+        else:
+            del waypoint_distance_from_origin[next_waypoint_id]
 
         # find the closest park(waypoint)
         closest_waypoint = min(waypoint_distance_from_origin, key=waypoint_distance_from_origin.get)
@@ -47,7 +51,7 @@ class MatrixCalculations:
         list_of_waypoints_names.append(closest_waypoint)
         closest_waypoint_lonLat = dict_of_waypoints[closest_waypoint]
         matrix_response_dict = {
-        'distances_from_current_waypoint': [distances_from_origin_dict],
+        'distances_from_current_waypoint': [distances_from_destination_dict],
         'dict_of_waypoints': [dict_of_waypoints],
         'next_waypoint_id': closest_waypoint,
         'next_waypoint_lonLat': closest_waypoint_lonLat}
