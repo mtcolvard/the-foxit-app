@@ -1,27 +1,30 @@
-# from django.http import Http404
-# from rest_framework.permissions import IsAuthenticatedOrReadOnly
 import math
 import itertools
 import requests
+
+from mapbox import Geocoder
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+# from rest_framework.permissions import IsAuthenticatedOrReadOnly
+# from django.http import Http404
 # from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
+
 from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer
-from mapbox import Geocoder
-from .matrixCalculations import MatrixCalculations
+from .mapboxMatrixAPI import MatrixCalculations
 
-from operator import add
-from mapbox import DirectionsMatrix
+
 
 class LocationList(ListCreateAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
+
 class LocationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
+
 
 class BoundingBox(APIView):
     def get(self, _request, currentWaypoint, destination, bounding_box_width):
@@ -126,7 +129,7 @@ class MapMatrixView(APIView):
 #         # calculate the closest and just send that back
 #         return Response(response.json())
 
-# COORDS IS EVERYTHING AFTER THE INTERNAL urls.py ROUTE WE CALL ON THE app.js AND THE DEFINE IN THIS view.py IN THE FOXIT BACKEND
+
 class MapDirectionsView(APIView):
     def get(self, _request, coords):
         params = {
@@ -148,6 +151,7 @@ class MapDirectionsView(APIView):
 #         data = response.json()
 #         print(data)
 #         return Response(response.json())
+
 
 class MapGeocoderView(APIView):
     def get(self, _request, searchQuery, bbox=None, country='ISO 3166-2:GB'):

@@ -1,24 +1,20 @@
 from operator import add
 from mapbox import DirectionsMatrix
 
+# """This pings the MapBox Matrix API to caluculate the distance to every park within a given bounding box distance of the current waypoint (which is initially the origin) and the distance from each of those parks to the destination.  It then sums to find the total distance to the destination through each park and averages the distances to create a subset of parks whose total distance is below the average.  Then it finds the closest park in that set to the current waypoint. This will be the closest park in the direction of the destination  It then calls the database to determine the next set of parks within the bounding box distance of that park"""
+
 service = DirectionsMatrix(access_token='pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ')
-
-origin = [-0.047092, 51.519331]
-destination = [-0.043618, 51.538311]
-
-# parks_within_bounding_box = {'origin': [-0.084254, 51.518961], 'destination': [-0.043618, 51.538311], 833: [-0.089122673954283, 51.511451872672], 854: [-0.093218055745589, 51.51691406886], 866: [-0.084613688708361, 51.515874600322], 910: [-0.088671282889504, 51.522235590909], 919: [-0.08412343783119, 51.527556921105], 938: [-0.089009852504822, 51.514147804368], 940: [-0.096061284965339, 51.517859516813], 941: [-0.09454589028448, 51.519633416092], 964: [-0.092880198087764, 51.525001871383], 1040: [-0.075555186872678, 51.525618133595], 1061: [-0.093218055745589, 51.51691406886], 1064: [-0.097389315769702, 51.520578833455], 1095: [-0.090074197976318, 51.523157700738], 1178: [-0.085601812291904, 51.526681805717], 1224: [-0.074417864366412, 51.518405409273], 1263: [-0.096323571501542, 51.511568985509], 1350: [-0.078814649948071, 51.516679002793], 1355: [-0.09860519828627, 51.525994076737], 1369: [-0.080292766543172, 51.515803950192], 1385: [-0.087494313257733, 51.515921612032], 1511: [-0.08192182513119, 51.511334318014], 1513: [-0.097726321466478, 51.512491003609], 1518: [-0.087419024791445, 51.517718896902]}
 
 dict_of_waypoints = {}
 list_of_waypoints_names = []
 
-# """This pings the MapBox Matrix API to caluculate the distance to every park within a given bounding box distance of the current waypoint (which is initially the origin) and the distance from each of those parks to the destination.  It then sums to find the total distance to the destination through each park and averages the distances to create a subset of parks whose total distance is below the average.  Then it finds the closest park in that set to the current waypoint. This will be the closest park in the direction of the destination  It then calls the database to determine the next set of parks within the bounding box distance of that park"""
-
 class MatrixCalculations:
     # def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
     def find_route_waypoints(self, parks_within_bounding_box):
-
         parks_lonLat_list = parks_within_bounding_box.values()
+
         response = service.matrix(parks_lonLat_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
+
         data = response.json()
         distances_from_origin = data['distances'][0]
         distances_from_destination = data['distances'][1]
