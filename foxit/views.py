@@ -35,7 +35,7 @@ class BoundingBox(APIView):
         dict_of_waypoints = {}
 
         while distance_from_next_waypoint_to_destination > bb_width:
-            print('currentWaypointArray 1', currentWaypointArray)
+            print('currentWaypoint', currentWaypointArray)
             lat_offset = (1/111111)*bb_width
             lon_offset = 1/(111111*math.cos(math.radians(currentWaypointArray[1])))*bb_width
             lat_max = currentWaypointArray[1] + lat_offset
@@ -51,7 +51,6 @@ class BoundingBox(APIView):
             print('count', count)
             response_data = serializer.data
     # THAT ^ IS A LIST OF DICTIONARIES CONTAINING PARK 'ID', 'NAME', & 'LON_LAT'
-            print('response data', response_data)
     # !!!!! REMEMBER TO CHANGE DESTINATION BACK TO NONE !!!!!!!!!!!!!!!!!!!
             # global parks_within_bounding_box
             parks_within_bounding_box = {'origin': currentWaypointArray, 'destination': destinationArray}
@@ -80,17 +79,13 @@ class BoundingBox(APIView):
         # 'next_waypoint_lonLat': closest_waypoint_lonLat}
 
             currentWaypointArray = [float(x) for x in matrix_result['next_waypoint_lonLat']]
-            print('currentWaypointArray 2', currentWaypointArray)
 
             distance_from_next_waypoint_to_destination = matrix_result['distances_from_current_waypoint'][0][matrix_result['next_waypoint_id']]
-            print('distance_from_next_waypoint_to_destination', distance_from_next_waypoint_to_destination)
 
             next_waypoint_id = matrix_result['next_waypoint_id']
-            print('next_waypoint_id', next_waypoint_id)
             parks_within_bounding_box.clear()
 
             dict_of_waypoints = matrix_result['dict_of_waypoints']
-            print('dict_of_waypoints', matrix_result['dict_of_waypoints'])
 
 
             # if distance_from_next_waypoint_to_destination > bb_width:
@@ -158,5 +153,4 @@ class MapGeocoderView(APIView):
         geocoder = Geocoder(name='mapbox.places', access_token='pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ')
         response = geocoder.forward(searchQuery, bbox, country)
         data = response.json()
-        print(data)
         return Response(response.json())
