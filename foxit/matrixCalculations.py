@@ -15,7 +15,7 @@ list_of_waypoints_names = []
 
 class MatrixCalculations:
     # def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width):
-    def find_route_waypoints(self, parks_within_bounding_box, bounding_box_width, next_waypoint_id):
+    def find_route_waypoints(self, parks_within_bounding_box):
 
         parks_lonLat_list = parks_within_bounding_box.values()
         response = service.matrix(parks_lonLat_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
@@ -43,24 +43,12 @@ class MatrixCalculations:
         print('closest_waypoint', closest_waypoint)
 
         # update the dictionary of waypoints to include this new waypoint
-        dict_of_waypoints.update({closest_waypoint: parks_within_bounding_box[closest_waypoint]})
-        list_of_waypoints_names.append(closest_waypoint)
-        closest_waypoint_lonLat = dict_of_waypoints[closest_waypoint]
+        dict_of_waypoints[closest_waypoint] = parks_within_bounding_box[closest_waypoint]
+
         matrix_response_dict = {
         'distances_from_current_waypoint': [distances_from_destination_dict],
         'dict_of_waypoints': dict_of_waypoints,
         'next_waypoint_id': closest_waypoint,
-        'next_waypoint_lonLat': closest_waypoint_lonLat}
+        'next_waypoint_lonLat': dict_of_waypoints[closest_waypoint]}
 
         return matrix_response_dict
-        # if distances_from_origin_dict['origin'] > bounding_box_width:
-        #     return closest_waypoint
-        # else:
-        #     return dict_of_waypoints
-
-        # print('closest waypoint name', closest_waypoint)
-        # print('MatrixCalc, dict of waypoints', dict_of_waypoints)
-        # print('MatrixCalc, list of waypoint names', list_of_waypoints_names)
-    #     parks_list.remove(parks_list[min_distance_index])
-    #     # loop_count = loop_count + 1
-    #     # print(list_of_waypoints)

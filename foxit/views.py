@@ -29,7 +29,6 @@ class BoundingBox(APIView):
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
         distance_from_next_waypoint_to_destination = 600
-        next_waypoint_id = None
         dict_of_waypoints = {}
 
         while distance_from_next_waypoint_to_destination > bb_width:
@@ -42,14 +41,14 @@ class BoundingBox(APIView):
             lon_min = currentWaypointArray[0] - lon_offset
 
             queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)[:23]
-            # # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX
+    # # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX THIS WILL GIVE GREATER ACCURACY AS IT WILL NOT ACCIDENTALLY THROW OUT RESULTS THAT MAY BE CLOSER.  REVIEW THE DJANGO DOCS FOR QUERYSETS TO FIGURE OUT HOW TO FILTER THIS BIG RESULT WITHOUT HAVING TO DO ANOTHER DATABASE HIT.  POSSIBLY THIS WILL BY IN PURE PYTHON RATHER THAN DJANGO PYTHON BUT PERHAPS NOT.
             # # if len(queryset) >= 25
             serializer = BoundingBoxSerializer(queryset, many=True)
             count = len(queryset)
             print('count', count)
             response_data = serializer.data
+    # THAT ^ IS A LIST OF DICTIONARIES CONTAINING PARK 'ID', 'NAME', & 'LON_LAT'
             print('response data', response_data)
-            # THAT ^ IS A LIST OF DICTIONARIES CONTAINING PARK 'ID', 'NAME', & 'LON_LAT'
     # !!!!! REMEMBER TO CHANGE DESTINATION BACK TO NONE !!!!!!!!!!!!!!!!!!!
             # global parks_within_bounding_box
             parks_within_bounding_box = {'origin': currentWaypointArray, 'destination': destinationArray}
@@ -58,24 +57,24 @@ class BoundingBox(APIView):
             for x in response_data:
                 parks_within_bounding_box[str(x['id'])] = [x['lon'], x['lat']]
 
-    # THIS MAY BE AN INELEGANT WAY TO DO THIS.      
+    # THIS MAY BE AN INELLEGANT WAY TO DO THIS.
             for x in dict_of_waypoints.keys():
                 if x in parks_within_bounding_box:
                     parks_within_bounding_box.pop(x)
-
-
+            print('parks_within_bounding_box update', parks_within_bounding_box)
+    # IS SOMETHING LIKE THIS BETTER?  IS THERE NO FILTER OR INTERTOOLS.FILTERFALSE METHOD THAT WOULD BE QUICKER?
             # reset_past_waypoint_values_to_none =  {k:v == None for (k,v) in dict_of_waypoints.items()}
             # parks_within_bounding_box.update(reset_past_waypoint_values_to_none)
             # for x in parks_within_bounding_box.values():
             #     if x == False:
             #         x.pop()
-            print('parks_within_bounding_box update', parks_within_bounding_box)
 
-            # matrix_result returns 'distances_from_current_waypoint': [distances_from_origin_dict],
-            # 'dict_of_waypoints': dict_of_waypoints,
-            # 'next_waypoint_id': closest_waypoint,
-            # 'next_waypoint_lonLat': closest_waypoint_lonLat}
-            matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box, bounding_box_width, next_waypoint_id)
+            matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box)
+    #  ------matrix_result LOOKS LIKE THIS ---------------------------
+        # 'distances_from_current_waypoint': [distances_from_origin_dict],
+        # 'dict_of_waypoints': dict_of_waypoints,
+        # 'next_waypoint_id': closest_waypoint,
+        # 'next_waypoint_lonLat': closest_waypoint_lonLat}
 
             currentWaypointArray = [float(x) for x in matrix_result['next_waypoint_lonLat']]
             print('currentWaypointArray 2', currentWaypointArray)
