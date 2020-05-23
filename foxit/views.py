@@ -32,7 +32,7 @@ class BoundingBox(APIView):
         bb_width = int(bounding_box_width)
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
-        distance_from_next_waypoint_to_destination = 600
+        distance_from_next_waypoint_to_destination = 501
         dict_of_waypoints = {'one':[-0.005,51.754]}
 
         while distance_from_next_waypoint_to_destination > bb_width:
@@ -90,7 +90,7 @@ class BoundingBox(APIView):
             #     continue
             # else:
         routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
-        print('routeGeometry',routeGeometry)
+        print('routeGeometry', routeGeometry)
 
         return Response(matrix_result['dict_of_waypoints'])
 

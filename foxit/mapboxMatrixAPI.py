@@ -36,7 +36,7 @@ class MatrixCalculations:
         #  create a subset of the parks(waypoints) where the total distance of a route through them is less than the average total distance across all parks
         sum_distances_minus_average = {k:v-average_distance for (k, v) in sum_distances_dict.items()}
 
-        waypoint_distances_closer_than_average = {k:v for (k, v) in sum_distances_minus_average.items() if v < 0}
+        waypoint_distances_closer_than_average = {k:v for (k, v) in sum_distances_minus_average.items() if v <= 0}
 
         waypoint_distance_from_origin = {k:v for (k, v) in distances_from_origin_dict.items() if k in distances_from_origin_dict.keys() & waypoint_distances_closer_than_average.keys()}
 
@@ -45,7 +45,7 @@ class MatrixCalculations:
         del waypoint_distance_from_origin['origin']
 
         # find the closest park(waypoint)
-        closest_waypoint = min(waypoint_distance_from_origin, key=waypoint_distance_from_origin.get)
+        closest_waypoint = min(waypoint_distance_from_origin)
 
         # update the dictionary of waypoints to include this new waypoint
         dict_of_waypoints[closest_waypoint] = parks_within_bounding_box[closest_waypoint]

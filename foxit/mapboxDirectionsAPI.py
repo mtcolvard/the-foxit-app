@@ -12,7 +12,7 @@ class DirectionsCalculations:
         data = response.geojson()
 
         print(data['features'])
-        return data['features'][0]['coordinates']
+        return data['features'][0]['geometry']['coordinates']
 
 
 # class DirectionsCalculations:
