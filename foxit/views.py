@@ -13,6 +13,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer
 from .mapboxMatrixAPI import MatrixCalculations
+from .mapboxDirectionsAPI import DirectionsCalculations
 
 
 
@@ -32,7 +33,7 @@ class BoundingBox(APIView):
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
         distance_from_next_waypoint_to_destination = 600
-        dict_of_waypoints = {}
+        dict_of_waypoints = {'one':[-0.005,51.754]}
 
         while distance_from_next_waypoint_to_destination > bb_width:
             print('currentWaypoint', currentWaypointArray)
@@ -79,18 +80,17 @@ class BoundingBox(APIView):
         # 'next_waypoint_lonLat': closest_waypoint_lonLat}
 
             currentWaypointArray = [float(x) for x in matrix_result['next_waypoint_lonLat']]
-
             distance_from_next_waypoint_to_destination = matrix_result['distances_from_current_waypoint'][0][matrix_result['next_waypoint_id']]
-
             next_waypoint_id = matrix_result['next_waypoint_id']
             parks_within_bounding_box.clear()
-
             dict_of_waypoints = matrix_result['dict_of_waypoints']
 
 
             # if distance_from_next_waypoint_to_destination > bb_width:
             #     continue
             # else:
+        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
+        print('routeGeometry',routeGeometry)
 
         return Response(matrix_result['dict_of_waypoints'])
 
