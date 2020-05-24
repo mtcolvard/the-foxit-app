@@ -40,6 +40,7 @@ class Map extends React.Component {
       isSearchTriggered: false,
       originLonLat: [-0.084254, 51.518961],
       destinationLonLat: [],
+      routeGeometry: [],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
         height: 'calc(100vh - 80px)',
         width: '100vw'},
@@ -127,26 +128,23 @@ class Map extends React.Component {
   sendDestinationToBackend(data) {
     axios.get(`api/boundingbox/${this.state.originLonLat}/${data}/${this.state.bounding_box_width}`)
       .then(res => this.setState({
-        closestWaypoints: res.data
+        routeGeometry: res.data
       }))
-      .then(console.log('closestWaypoints', this.state.closestWaypoints))
+      .then(console.log('routeGeometry', this.state.routeGeometry))
   }
-
-
 
   // getWalkingRoute(data) {
   //   axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
   //     .then(res => this.setState({ directions: res.data.routes[0].geometry }))
   // }
 
-
   render () {
-    const {viewport, directions, formData, searchResponseData, isSearchTriggered} = this.state
+    const {viewport, directions, formData, searchResponseData, isSearchTriggered, routeGeometry} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {
       type: 'FeatureCollection',
       features: [
-        {type: 'Feature', geometry: directions}
+        {type: 'Feature', geometry: routeGeometry}
       ]
     }
     return (
@@ -193,7 +191,7 @@ class Map extends React.Component {
                 {...point}
               />
             ))}
-            {directions &&
+            {routeGeometry &&
               <Source id="my-data" type="geojson" data={directionsLayer}>
                 <Layer
                   type='line'

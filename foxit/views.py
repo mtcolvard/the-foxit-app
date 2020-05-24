@@ -92,7 +92,7 @@ class BoundingBox(APIView):
         routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
         print('routeGeometry', routeGeometry)
 
-        return Response(matrix_result['dict_of_waypoints'])
+        return Response(routeGeometry)
 
 
 class MapMatrixView(APIView):
