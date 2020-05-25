@@ -5,11 +5,9 @@ from mapbox import DirectionsMatrix
 
 service = DirectionsMatrix(access_token='pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ')
 
-dict_of_waypoints = {}
-list_of_waypoints_names = []
 
 class MatrixCalculations:
-    def find_route_waypoints(self, parks_within_bounding_box):
+    def find_route_waypoints(self, parks_within_bounding_box, dict_of_waypoints):
         parks_lonLat_list = parks_within_bounding_box.values()
 
         response = service.matrix(parks_lonLat_list, profile='mapbox/walking', sources=[0, 1], annotations=['distance'])
@@ -40,7 +38,7 @@ class MatrixCalculations:
 
         waypoint_distance_from_origin = {k:v for (k, v) in distances_from_origin_dict.items() if k in distances_from_origin_dict.keys() & waypoint_distances_closer_than_average.keys()}
 
-        print('waypoint_distance_from_origin', waypoint_distance_from_origin)
+        # print('waypoint_distance_from_origin', waypoint_distance_from_origin)
 
         del waypoint_distance_from_origin['origin']
 

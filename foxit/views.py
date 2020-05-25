@@ -11,7 +11,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 # from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 from .models import Location
-from .serializers import LocationSerializer, BoundingBoxSerializer
+from .serializers import LocationSerializer, BoundingBoxSerializer, RouteThenBoundingBoxSerializer
 from .mapboxMatrixAPI import MatrixCalculations
 from .mapboxDirectionsAPI import DirectionsCalculations
 
@@ -26,6 +26,24 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
+class RouteThenBoundingBox(APIView):
+    def get(self, _request, currentWaypoint, destination, bounding_box_width):
+        bb_width = int(bounding_box_width)
+        currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
+        destinationArray = [float(x) for x in destination.split(',')]
+
+        dict_of_waypoints = {'origin': currentWaypointArray, 'destination': destinationArray}
+        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
+        # routeGeometryCoords = list(routeGeometry['geometry']['coordinates'][0])
+        # for x in routeGeometryCoords :
+        #     lons = x[0]
+        # print('routeGeometry', routeGeometry)
+        # print('routeGeometry coordinates', routeGeometry['geometry']['coordinates'][0][0])
+        # print(lons)
+
+
+        return Response(routeGeometry)
+
 
 class BoundingBox(APIView):
     def get(self, _request, currentWaypoint, destination, bounding_box_width):
@@ -33,10 +51,10 @@ class BoundingBox(APIView):
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
         distance_from_next_waypoint_to_destination = 501
-        dict_of_waypoints = {'one':[-0.005,51.754]}
+        dict_of_waypoints = {}
 
         while distance_from_next_waypoint_to_destination > bb_width:
-            print('currentWaypoint', currentWaypointArray)
+            # print('currentWaypoint', currentWaypointArray)
             lat_offset = (1/111111)*bb_width
             lon_offset = 1/(111111*math.cos(math.radians(currentWaypointArray[1])))*bb_width
             lat_max = currentWaypointArray[1] + lat_offset
@@ -55,7 +73,7 @@ class BoundingBox(APIView):
     # !!!!! REMEMBER TO CHANGE DESTINATION BACK TO NONE !!!!!!!!!!!!!!!!!!!
             # global parks_within_bounding_box
             parks_within_bounding_box = {'origin': currentWaypointArray, 'destination': destinationArray}
-            print('parks_within_bounding_box initial', parks_within_bounding_box)
+            # print('parks_within_bounding_box initial', parks_within_bounding_box)
             # CREATE A NEW DICTIONARY WITH THE 'ID' AND [LON,LAT] OF EACH PARK AS KEY:VALUE
             for x in response_data:
                 parks_within_bounding_box[str(x['id'])] = [x['lon'], x['lat']]
@@ -64,7 +82,7 @@ class BoundingBox(APIView):
             for x in dict_of_waypoints.keys():
                 if x in parks_within_bounding_box:
                     parks_within_bounding_box.pop(x)
-            print('parks_within_bounding_box update', parks_within_bounding_box)
+            # print('parks_within_bounding_box update', parks_within_bounding_box)
     # IS SOMETHING LIKE THIS BETTER?  IS THERE NO FILTER OR INTERTOOLS.FILTERFALSE METHOD THAT WOULD BE QUICKER?
             # reset_past_waypoint_values_to_none =  {k:v == None for (k,v) in dict_of_waypoints.items()}
             # parks_within_bounding_box.update(reset_past_waypoint_values_to_none)
@@ -72,7 +90,7 @@ class BoundingBox(APIView):
             #     if x == False:
             #         x.pop()
 
-            matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box)
+            matrix_result = MatrixCalculations.find_route_waypoints(self, parks_within_bounding_box, dict_of_waypoints)
     #  ------matrix_result LOOKS LIKE THIS ---------------------------
         # 'distances_from_current_waypoint': [distances_from_origin_dict],
         # 'dict_of_waypoints': dict_of_waypoints,
@@ -84,6 +102,7 @@ class BoundingBox(APIView):
             next_waypoint_id = matrix_result['next_waypoint_id']
             parks_within_bounding_box.clear()
             dict_of_waypoints = matrix_result['dict_of_waypoints']
+            print('dict_of_waypoints', dict_of_waypoints)
 
 
             # if distance_from_next_waypoint_to_destination > bb_width:
