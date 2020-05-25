@@ -34,15 +34,56 @@ class RouteThenBoundingBox(APIView):
 
         dict_of_waypoints = {'origin': currentWaypointArray, 'destination': destinationArray}
         routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
-        # routeGeometryCoords = list(routeGeometry['geometry']['coordinates'][0])
-        # for x in routeGeometryCoords :
-        #     lons = x[0]
-        # print('routeGeometry', routeGeometry)
-        # print('routeGeometry coordinates', routeGeometry['geometry']['coordinates'][0][0])
-        # print(lons)
+        routeGeometryCoords = routeGeometry['geometry']['coordinates']
+        lons = [x for x,y in routeGeometryCoords]
+        lats = [y for x,y in routeGeometryCoords]
+        lon_max = max(lons)
+        lon_min = min(lons)
+        lat_max = max(lats)
+        lat_min = min(lats)
 
+        queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)
+
+        if currentWaypointArray[0] <= destinationArray[0] and currentWaypointArray[1] <= destinationArray[1]:
+            querysetOrder = queryset.order_by('lat', 'lon')
+        elif currentWaypointArray[0] <= destinationArray[0] and currentWaypointArray[1] >= destinationArray[1]:
+            querysetOrder = queryset.order_by('-lat', 'lon')
+        elif currentWaypointArray[0] >= destinationArray[0] and currentWaypointArray[1] >= destinationArray[1]:
+            querysetOrder = queryset.order_by('-lat', '-lon')
+        else:
+            querysetOrder = queryset.order_by('lat', '-lon')
+
+# # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX THIS WILL GIVE GREATER ACCURACY AS IT WILL NOT ACCIDENTALLY THROW OUT RESULTS THAT MAY BE CLOSER.  REVIEW THE DJANGO DOCS FOR QUERYSETS TO FIGURE OUT HOW TO FILTER THIS BIG RESULT WITHOUT HAVING TO DO ANOTHER DATABASE HIT.  POSSIBLY THIS WILL BY IN PURE PYTHON RATHER THAN DJANGO PYTHON BUT PERHAPS NOT.
+        # # if len(queryset) >= 25
+        serializer = BoundingBoxSerializer(querysetOrder, many=True)
+        count = len(querysetOrder)
+        print('count', count)
+        response_data = serializer.data
+        print('response_data',response_data)
 
         return Response(routeGeometry)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 class BoundingBox(APIView):
