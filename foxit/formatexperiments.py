@@ -2,48 +2,72 @@ import math
 
 routeGeometry = {'type': 'Feature', 'geometry': {'type': 'LineString', 'coordinates': [(-0.07112, 51.51883), (-0.0693, 51.51909), (-0.06911, 51.51863), (-0.06769, 51.51889), (-0.06739, 51.51808), (-0.06673, 51.51734), (-0.06697, 51.51726), (-0.06669, 51.51692), (-0.06619, 51.51699), (-0.06494, 51.51697), (-0.06247, 51.51727), (-0.05728, 51.51774), (-0.05726, 51.51766), (-0.05519, 51.51762), (-0.05266, 51.51713), (-0.04986, 51.51688)]}, 'properties': {'distance': 1728.472, 'duration': 1226.233}}
 
-
+51.533174, -0.077015
 
 origin = (-0.07112, 51.51883)
-destination = (-0.077636, 51.525340)
-origin_lon = origin[0]
-origin_lat = origin[1]
-destination_lon = destination[0]
-destination_lat = destination[1]
+destination = (-0.058508, 51.528368)
+waypoint1 = (-0.064426, 51.524936)
+waypoint2 = (-0.061608, 51.523735)
 
-R = 6371000
-φ1 = origin_lat * math.pi/180
-φ2 = destination_lat * math.pi/180
-Δφ = (destination_lat - origin_lat) * math.pi/180
-Δλ = (destination_lon - origin_lon) * math.pi/180
+def crowflys_bearing(startpoint, endpoint):
 
-# CROWFLYS
-a = math.sin(Δφ/2) * math.sin(Δφ/2) + math.cos(φ1) * math.cos(φ2) * math.sin(Δλ/2) * math.sin(Δλ/2)
-c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-crowflys = R * c
+    startpoint_lon = startpoint[0]
+    startpoint_lat = startpoint[1]
+    endpoint_lon = endpoint[0]
+    endpoint_lat = endpoint[1]
 
-# BEARING
-y = math.sin(Δλ) * math.cos(φ2)
-x = math.cos(φ1)*math.sin(φ2) - math.sin(φ1)*math.cos(φ2)*math.cos(Δλ)
-θ = math.atan2(y, x)
-bearing = (θ*180/math.pi + 360) % 360
-print(θ*180/math.pi)
+    R = 6371000
+    φ1 = startpoint_lat * math.pi/180
+    φ2 = endpoint_lat * math.pi/180
+    Δφ = (endpoint_lat - startpoint_lat) * math.pi/180
+    Δλ = (endpoint_lon - startpoint_lon) * math.pi/180
+
+    # CROWFLYS
+    a = math.sin(Δφ/2) * math.sin(Δφ/2) + math.cos(φ1) * math.cos(φ2) * math.sin(Δλ/2) * math.sin(Δλ/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    crowflys = R * c
+
+    # BEARING
+    y = math.sin(Δλ) * math.cos(φ2)
+    x = math.cos(φ1)*math.sin(φ2) - math.sin(φ1)*math.cos(φ2)*math.cos(Δλ)
+    θ = math.atan2(y, x)
+    bearing = (θ*180/math.pi + 360) % 360
+
+    return crowflys, θ
+
+def perpendicular_distance_from_bestfit_line(bestFit, waypoint):
+    angle_to_waypoint = math.fabs(bestFit[1] - waypoint[1])
+    print('angle_to_waypoint', angle_to_waypoint)
+    print('waypoint[0]', waypoint[0])
+    print('sin angeltowaypoint',math.sin(angle_to_waypoint))
+    perp_distance = waypoint[0] * math.sin(angle_to_waypoint)
+    print('perp_distance', perp_distance)
+    print(perp_distance)
 
 
 
 
-if θ > math.pi*2/3 and θ > math.pi/3:
-    lon_atan2offset = math.cos(math.pi/3) * crowflys
-    verticle_bb(lon_atan2offset)
-
-def verticle_bb(offset):
-    lon_max = origin_lon + (math.cos(θ)/offset)
-    lon_min = origin_lon - ((offset - math.cos(θ))/offset)
-    lat_max = destination_lat
-    lat_min = origin_lat
-    print(lon_max)
+def main():
+    bestFit = crowflys_bearing(origin, destination)
+    waypoint = crowflys_bearing(origin, waypoint2)
+    perpendicular_distance_from_bestfit_line(bestFit, waypoint)
 
 
+if __name__ == "__main__":
+    main()
+
+
+# attempt at sliding bounding box between 60 and 120 degress
+# if θ > math.pi*2/3 and θ > math.pi/3:
+#     lon_atan2offset = math.cos(math.pi/3) * crowflys
+#     verticle_bb(lon_atan2offset)
+#
+# def verticle_bb(offset):
+#     lon_max = origin_lon + (math.cos(θ)/offset)
+#     lon_min = origin_lon - ((offset - math.cos(θ))/offset)
+#     lat_max = destination_lat
+#     lat_min = origin_lat
+#     print(lon_max)
 
 
 
