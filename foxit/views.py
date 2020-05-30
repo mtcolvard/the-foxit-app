@@ -9,11 +9,13 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 # from rest_framework.permissions import IsAuthenticatedOrReadOnly
 # from django.http import Http404
 # from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
+from django.db.models import Case, When, FloatField
 
 from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer, RouteThenBoundingBoxSerializer
 from .mapboxMatrixAPI import MatrixCalculations
 from .mapboxDirectionsAPI import DirectionsCalculations
+from .distanceAndBearingCalcs import DistanceAndBearing
 
 
 
@@ -27,61 +29,55 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
 
 class RouteThenBoundingBox(APIView):
-    def get(self, _request, currentWaypoint, destination, bounding_box_width):
+    def get(self, request, currentWaypoint, destination, bounding_box_width):
         bb_width = int(bounding_box_width)
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
-
-        dict_of_waypoints = {'origin': currentWaypointArray, 'destination': destinationArray}
-        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
-        routeGeometryCoords = routeGeometry['geometry']['coordinates']
-        lons = [x for x,y in routeGeometryCoords]
-        lats = [y for x,y in routeGeometryCoords]
-        lon_max = max(lons)
-        lon_min = min(lons)
-        lat_max = max(lats)
-        lat_min = min(lats)
-
-        queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)
-
-        if currentWaypointArray[0] <= destinationArray[0] and currentWaypointArray[1] <= destinationArray[1]:
-            querysetOrder = queryset.order_by('lat', 'lon')
-        elif currentWaypointArray[0] <= destinationArray[0] and currentWaypointArray[1] >= destinationArray[1]:
-            querysetOrder = queryset.order_by('-lat', 'lon')
-        elif currentWaypointArray[0] >= destinationArray[0] and currentWaypointArray[1] >= destinationArray[1]:
-            querysetOrder = queryset.order_by('-lat', '-lon')
-        else:
-            querysetOrder = queryset.order_by('lat', '-lon')
-
-# # IN FUTURE REMOVE THE SLICE ABOVE AND CREATE AN IF ELSE STATMENT SHRINKING THE BOUNDING BOX THIS WILL GIVE GREATER ACCURACY AS IT WILL NOT ACCIDENTALLY THROW OUT RESULTS THAT MAY BE CLOSER.  REVIEW THE DJANGO DOCS FOR QUERYSETS TO FIGURE OUT HOW TO FILTER THIS BIG RESULT WITHOUT HAVING TO DO ANOTHER DATABASE HIT.  POSSIBLY THIS WILL BY IN PURE PYTHON RATHER THAN DJANGO PYTHON BUT PERHAPS NOT.
-        # # if len(queryset) >= 25
-        serializer = BoundingBoxSerializer(querysetOrder, many=True)
-        count = len(querysetOrder)
+        best_fit = DistanceAndBearing.crowflys_bearing(self, currentWaypointArray, destinationArray)
+        queryset = Location.objects.all()
+        serializer = BoundingBoxSerializer(queryset, many=True)
+        count = len(queryset)
         print('count', count)
         response_data = serializer.data
-        print('response_data',response_data)
-
-        return Response(routeGeometry)
 
 
+        parks_dict = {}
+        for park in response_data:
+            park_lon_lat = [park['lon'], park['lat']]
+            parks_dict[park['id']] = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit, DistanceAndBearing.crowflys_bearing(self, currentWaypointArray, park_lon_lat))
 
+        for x in parks_dict:
+            if x[0][0] < 500:
+                min_parks = x
 
+        # querysetTwo = Locations.object.annotate(perp_distance=)
 
-
-
-
-
-
-
-
-
-
+        print(min_parks)
+        return Response(parks_dict)
 
 
 
+        # whens = [
+        #     When(id=k, then=v) for k,v in parks_dict.items()
+        # ]
+        # qs = Location.objects.all().annotate(
+        #     score=Case(*whens, default=0, output_field=FloatField())
+        # ).order_by('score')
+        # # for park in qs:
+        # #     print(park.score)
+        # return Response(qs)
 
+        # queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)
 
-
+        # dict_of_waypoints = {'origin': currentWaypointArray, 'destination': destinationArray}
+        # routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
+        # routeGeometryCoords = routeGeometry['geometry']['coordinates']
+        # lons = [x for x,y in routeGeometryCoords]
+        # lats = [y for x,y in routeGeometryCoords]
+        # lon_max = max(lons)
+        # lon_min = min(lons)
+        # lat_max = max(lats)
+        # lat_min = min(lats)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
