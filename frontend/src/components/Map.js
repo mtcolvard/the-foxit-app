@@ -5,7 +5,8 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
 import DropDownDisplay from './DropDownDisplay'
 
-import Marker from './Marker'
+// import Marker from './Marker'
+import Pins from './Pins'
 
 const geolocateStyle = {
   position: 'absolute',
@@ -48,6 +49,7 @@ class Map extends React.Component {
       originLonLat: [-0.071132, 51.518891],
       destinationLonLat: [],
       routeGeometry: routeGeometryStateDefault,
+      parksWithinPerpDistance: [[-0.071132, 51.518891]],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
         height: 'calc(100vh - 80px)',
         width: '100vw'},
@@ -69,6 +71,7 @@ class Map extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.dropDownData = this.dropDownData.bind(this)
     this.sendDestinationToBackend = this.sendDestinationToBackend.bind(this)
+    this.handlefakeclick = this.handlefakeclick.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
@@ -123,6 +126,11 @@ class Map extends React.Component {
       .then(console.log('response', this.state.destinationLonLat))
   }
 
+  handlefakeclick(e) {
+    e.preventDefault()
+    this.sendDestinationToBackend([-0.058508, 51.528368])
+  }
+
 
   dropDownData(data) {
     this.setState({
@@ -139,9 +147,9 @@ class Map extends React.Component {
   sendDestinationToBackend(data) {
     axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${data}/${this.state.bounding_box_width}`)
       .then(res => this.setState({
-        routeGeometry: res.data
+        parksWithinPerpDistance: res.data
       }))
-      .then(console.log('routeGeometry', this.state.routeGeometry))
+      .then(console.log('parksWithinPerpDistance', this.state.parksWithinPerpDistance))
   }
 
 // FOR ORIGINAL BOUNDING BOX VIEW
@@ -158,8 +166,10 @@ class Map extends React.Component {
   //     .then(res => this.setState({ directions: res.data.routes[0].geometry }))
   // }
 
+
+
   render () {
-    const {viewport, directions, formData, searchResponseData, isSearchTriggered, routeGeometry} = this.state
+    const {viewport, directions, formData, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -186,7 +196,7 @@ class Map extends React.Component {
           )}
         </div>
         <div className="iconMenu">
-          <button className="button">Search
+          <button className="button" onClick={this.handlefakeclick}>Search
           </button>
           <button className="button">Directions
           </button>
@@ -197,6 +207,7 @@ class Map extends React.Component {
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
+            <Pins data={parksWithinPerpDistance} />
             {routeGeometry &&
               <Source id="my-data" type="geojson" data={routeGeometry}>
                 <Layer
@@ -226,6 +237,8 @@ class Map extends React.Component {
 }
 
 export default Map
+
+
 
 
 // // goes above directions && <Source ...

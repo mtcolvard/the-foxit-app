@@ -9,7 +9,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 # from rest_framework.permissions import IsAuthenticatedOrReadOnly
 # from django.http import Http404
 # from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
-from django.db.models import Case, When, FloatField
+from django.db.models import Case, When, FloatField, F, Count
 
 from .models import Location
 from .serializers import LocationSerializer, BoundingBoxSerializer, RouteThenBoundingBoxSerializer
@@ -34,38 +34,34 @@ class RouteThenBoundingBox(APIView):
         currentWaypointArray = [float(x) for x in currentWaypoint.split(',')]
         destinationArray = [float(x) for x in destination.split(',')]
         best_fit = DistanceAndBearing.crowflys_bearing(self, currentWaypointArray, destinationArray)
+        # the_count = Location.objects.annotate(
+        #     park_count=F(2)
+        # )
+        # print(the_count)
+
         queryset = Location.objects.all()
         serializer = BoundingBoxSerializer(queryset, many=True)
-        count = len(queryset)
-        print('count', count)
         response_data = serializer.data
-
 
         parks_dict = {}
         for park in response_data:
             park_lon_lat = [park['lon'], park['lat']]
-            parks_dict[park['id']] = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit, DistanceAndBearing.crowflys_bearing(self, currentWaypointArray, park_lon_lat))
+            parks_dict[park['id']] = {'park_lon_lat':park_lon_lat, 'perp_distance_angle':DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit, DistanceAndBearing.crowflys_bearing(self, currentWaypointArray, park_lon_lat))}
 
-        for x in parks_dict:
-            if x[0][0] < 500:
-                min_parks = x
+        parks_within_perp_distance = {k:v for (k,v) in parks_dict.items() if v['perp_distance_angle'][0]<500 and v['perp_distance_angle'][0] > 0}
+# THIS STUFF COMES IN AND YOU WANT TO LIMIT THE SET TO ALL PERP_DISTANCES UNDER MIN... SAY 500m , THEN YOU NEED TO SORT ALL THIS BY DISTANCE FROM ORIGIN.
+# THEN YOU NEED TO DECIDE WHAT TO DO IF TO PARKS ARE A SIMILAR DISTANCE FROM THE ORIGIN
+# YOU COULD USE THE WAYPOINTS FROM THE DEFAULT MAPBOX ROUTE GEOMETRY TO HELP FILTER FOR MOST  PLAUSIBLE ROUTES
+# YOU SHOULD PRIORITIZE PARKS WITH THE GREATEST AREA.
+# PERHAPS THE WHOLE ROUTE SHOULD BE SECTIONED INTO THIRDS OR QUARTERS.  SO THAT YOU COULD LOOK FOR THE BIG PARKS, BUT ALSO GROUP THE CROWFLIES DISTANCES INTO SECTIONS AND JUST PIC ONE OR TWO FROM EACH. ///////////  AN ALTERNATIVE WOULD BE TO DO SOMETHING LIKE THAT MAPBOX MATRIX ALGORYTHM YOU WROTE TO FIND THE NEXT PARK.
 
         # querysetTwo = Locations.object.annotate(perp_distance=)
-
-        print(min_parks)
-        return Response(parks_dict)
+        parks_within_perp_distance_lon_lat_array = [x['park_lon_lat'] for x in parks_within_perp_distance.values()]
 
 
+        print(parks_within_perp_distance_lon_lat_array)
+        return Response(parks_within_perp_distance_lon_lat_array)
 
-        # whens = [
-        #     When(id=k, then=v) for k,v in parks_dict.items()
-        # ]
-        # qs = Location.objects.all().annotate(
-        #     score=Case(*whens, default=0, output_field=FloatField())
-        # ).order_by('score')
-        # # for park in qs:
-        # #     print(park.score)
-        # return Response(qs)
 
         # queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)
 
