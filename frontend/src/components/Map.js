@@ -128,7 +128,7 @@ class Map extends React.Component {
 
   handlefakeclick(e) {
     e.preventDefault()
-    this.sendDestinationToBackend([-0.058508, 51.528368])
+    this.sendDestinationToBackend([-0.104109, 51.531267])
   }
 
 

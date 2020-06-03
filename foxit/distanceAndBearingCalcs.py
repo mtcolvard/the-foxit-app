@@ -1,10 +1,5 @@
 import math
 
-origin = (-0.07112, 51.51883)
-destination = (-0.058508, 51.528368)
-waypoint1 = (-0.064426, 51.524936)
-waypoint2 = (-0.061608, 51.523735)
-
 class DistanceAndBearing:
     def crowflys_bearing(self, startpoint, endpoint):
 
