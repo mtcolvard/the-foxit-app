@@ -44,7 +44,7 @@ class Map extends React.Component {
     super()
 
     this.state = {
-      bounding_box_width: 500,
+      ramblingTolerance: 500,
       isSearchTriggered: false,
       originLonLat: [-0.071132, 51.518891],
       destinationLonLat: [],
@@ -77,7 +77,7 @@ class Map extends React.Component {
 
 
   // componentDidMount() {
-  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${this.state.bounding_box_width}`)
+  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${this.state.ramblingTolerance}`)
   //     .then(res => this.setState({
   //       closestWaypoints: res.data[0]
   //     }))
@@ -125,10 +125,14 @@ class Map extends React.Component {
       // .then(() => this.queryDbForClosestParks())
       .then(console.log('response', this.state.destinationLonLat))
   }
-
+// I = -0.042499, 51.543832
+// II = -0.032414, 51.446282
+// III = -0.115405, 51.495166
+// IV = -0.104109, 51.531267
+// N = -0.097235, 51.559927
   handlefakeclick(e) {
     e.preventDefault()
-    this.sendDestinationToBackend([-0.104109, 51.531267])
+    this.sendDestinationToBackend([-0.097235, 51.559927])
   }
 
 
@@ -145,7 +149,7 @@ class Map extends React.Component {
   }
 
   sendDestinationToBackend(data) {
-    axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${data}/${this.state.bounding_box_width}`)
+    axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${data}/${this.state.ramblingTolerance}`)
       .then(res => this.setState({
         parksWithinPerpDistance: res.data
       }))
@@ -154,7 +158,7 @@ class Map extends React.Component {
 
 // FOR ORIGINAL BOUNDING BOX VIEW
   // sendDestinationToBackend(data) {
-  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${data}/${this.state.bounding_box_width}`)
+  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${data}/${this.state.ramblingTolerance}`)
   //     .then(res => this.setState({
   //       routeGeometry: res.data
   //     }))

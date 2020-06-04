@@ -24,13 +24,14 @@ class DistanceAndBearing:
         x = math.cos(φ1)*math.sin(φ2) - math.sin(φ1)*math.cos(φ2)*math.cos(Δλ)
         θ = math.atan2(y, x)
         bearing = (θ*180/math.pi + 360) % 360
+        return crowflys, θ, bearing
 
-        return crowflys, θ
+
 
     def perpendicular_distance_from_bestfit_line(self, bestFit, waypointFit):
         angle_to_waypoint = math.fabs(bestFit[1] - waypointFit[1])
         perp_distance_to_waypoint = waypointFit[0] * math.sin(angle_to_waypoint)
-        return perp_distance_to_waypoint, angle_to_waypoint
+        return perp_distance_to_waypoint
 
 
 

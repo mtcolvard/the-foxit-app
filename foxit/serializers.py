@@ -17,4 +17,4 @@ class BoundingBoxSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ('id', 'name', 'lon', 'lat', 'lon_lat')
+        fields = ('id', 'name', 'lon', 'lat', 'lon_lat', 'size_in_hectares')
