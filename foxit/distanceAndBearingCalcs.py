@@ -24,7 +24,7 @@ class DistanceAndBearing:
         x = math.cos(φ1)*math.sin(φ2) - math.sin(φ1)*math.cos(φ2)*math.cos(Δλ)
         θ = math.atan2(y, x)
         bearing = (θ*180/math.pi + 360) % 360
-        return crowflys, θ, bearing
+        return crowflys, θ
 
 
 

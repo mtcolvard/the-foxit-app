@@ -1,7 +1,6 @@
 import math
-import operator
-import itertools
 import requests
+import collections.abc
 
 from mapbox import Geocoder
 from rest_framework.response import Response
@@ -13,24 +12,22 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from django.db.models import Case, When, FloatField, F, Count
 
 from .models import Location
-from .serializers import LocationSerializer, BoundingBoxSerializer, RouteThenBoundingBoxSerializer
+from .serializers import LocationSerializer, BoundingBoxSerializer
 from .mapboxMatrixAPI import MatrixCalculations
 from .mapboxDirectionsAPI import DirectionsCalculations
 from .distanceAndBearingCalcs import DistanceAndBearing
-
 
 
 class LocationList(ListCreateAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
-
 class LocationDetail(RetrieveUpdateDestroyAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
 class RouteThenBoundingBox(APIView):
-    def get(self, request, currentWaypoint, destination, ramblingTolerance):
+    def get(self, _request, currentWaypoint, destination, ramblingTolerance):
         rambling_tolerance = int(ramblingTolerance)
         current_waypoint_array = [float(x) for x in currentWaypoint.split(',')]
         destination_array = [float(x) for x in destination.split(',')]
@@ -52,24 +49,44 @@ class RouteThenBoundingBox(APIView):
 
             parks_dict[park['id']] = {
             'park_lon_lat': park_lon_lat,
-            'park_crowflys_distance_and_bearing': park_crowflys_distance_and_bearing,
-            'park_distance_from_bestfit_line': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit, park_crowflys_distance_and_bearing),
+            'park_crowflys_distance_and_bearing': {'initial': park_crowflys_distance_and_bearing},
+            'park_distance_from_bestfit_line': {'initial': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit, park_crowflys_distance_and_bearing)},
             'size_in_hectares': size_in_hectares_float}
 
         parks_within_perp_distance = {
         k:v for (k, v) in parks_dict.items() if
         # select only parks within ± 45 degrees of inital bearing towards destination
-        v['park_crowflys_distance_and_bearing'][1] < (best_fit[1] + math.pi/4) and
-        v['park_crowflys_distance_and_bearing'][1] > (best_fit[1] - math.pi/4) and
+        v['park_crowflys_distance_and_bearing']['initial'][1] < (best_fit[1] + math.pi/4) and
+        v['park_crowflys_distance_and_bearing']['initial'][1] > (best_fit[1] - math.pi/4) and
         # select only parks closer that the crowflys distance from origin to destination
-        v['park_crowflys_distance_and_bearing'][0] < best_fit[0] and
+        v['park_crowflys_distance_and_bearing']['initial'][0] < best_fit[0] and
         # select parks within users tolerance for rambling
-        v['park_distance_from_bestfit_line'] <= rambling_tolerance and
-        v['park_distance_from_bestfit_line'] >= 0}
-        print('parks_within_perp_distance', parks_within_perp_distance)
+        v['park_distance_from_bestfit_line']['initial'] <= rambling_tolerance and
+        v['park_distance_from_bestfit_line']['initial'] >= 0}
 
         largest_park = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
-        print('largest_park', largest_park)
+
+        best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_array, parks_within_perp_distance[largest_park]['park_lon_lat'])
+        print('best_fit_to_largest_park',best_fit_to_largest_park)
+
+        for k, v in parks_within_perp_distance.items():
+            perp_distance_origin_to_largest_park = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_to_largest_park, v['park_crowflys_distance_and_bearing']['initial'] )
+            # v.update({'perp_distance_origin_to_largest_park':perp_distance_origin_to_largest_park})
+            v.update({'park_distance_from_bestfit_line':{'initial':v['park_distance_from_bestfit_line']['initial'], 'to_largest_park':perp_distance_origin_to_largest_park}})
+
+        print(parks_within_perp_distance)
+
+        parks_within_perp_distance_origin_to_largest_park = {k:v for (k, v) in parks_within_perp_distance.items() if
+        # select only parks closer that the crowflys distance from origin to destination
+        # v['park_crowflys_distance_and_bearing']['initial'][0] < best_fit[0] and
+        # select parks within users tolerance for rambling
+        v['park_distance_from_bestfit_line']['to_largest_park'] <= rambling_tolerance/5 and
+        v['park_distance_from_bestfit_line']['to_largest_park'] > 0}
+        print('parks_within_perp_distance_origin_to_largest_park',parks_within_perp_distance_origin_to_largest_park)
+
+        parks_within_perp_distance_lon_lat_list = [x['park_lon_lat'] for x in parks_within_perp_distance.values()]
+        return Response(parks_within_perp_distance_lon_lat_list)
+
 
 
 # YOU SHOULD PRIORITIZE PARKS WITH THE GREATEST AREA.
@@ -77,26 +94,6 @@ class RouteThenBoundingBox(APIView):
 # THEN YOU NEED TO DECIDE WHAT TO DO IF TO PARKS ARE A SIMILAR DISTANCE FROM THE ORIGIN
 # YOU COULD USE THE WAYPOINTS FROM THE DEFAULT MAPBOX ROUTE GEOMETRY TO HELP FILTER FOR MOST  PLAUSIBLE ROUTES
 # PERHAPS THE WHOLE ROUTE SHOULD BE SECTIONED INTO THIRDS OR QUARTERS.  SO THAT YOU COULD LOOK FOR THE BIG PARKS, BUT ALSO GROUP THE CROWFLIES DISTANCES INTO SECTIONS AND JUST PIC ONE OR TWO FROM EACH. ///////////  AN ALTERNATIVE WOULD BE TO DO SOMETHING LIKE THAT MAPBOX MATRIX ALGORYTHM YOU WROTE TO FIND THE NEXT PARK.
-
-        # querysetTwo = Locations.object.annotate(perp_distance=)
-        parks_within_perp_distance_lon_lat_array = [x['park_lon_lat'] for x in parks_within_perp_distance.values()]
-
-
-        print(parks_within_perp_distance_lon_lat_array)
-        return Response(parks_within_perp_distance_lon_lat_array)
-
-
-        # queryset = Location.objects.filter(lat__lte=lat_max, lat__gte=lat_min, lon__lte=lon_max, lon__gte=lon_min)
-
-        # dict_of_waypoints = {'origin': current_waypoint_array, 'destination': destination_array}
-        # routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
-        # routeGeometryCoords = routeGeometry['geometry']['coordinates']
-        # lons = [x for x,y in routeGeometryCoords]
-        # lats = [y for x,y in routeGeometryCoords]
-        # lon_max = max(lons)
-        # lon_min = min(lons)
-        # lat_max = max(lats)
-        # lat_min = min(lats)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
