@@ -27,11 +27,25 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = LocationSerializer
 
 class RouteThenBoundingBox(APIView):
+    def parks_within_perp_distance(self, parks_dict, journey_leg, best_fit, rambling_tolerance):
+        parks_within_perp_distance = {
+        k:v for (k, v) in parks_dict.items() if
+        # select only parks within ± 45 degrees of inital bearing towards destination
+        v['park_crowflys_distance_and_bearing'][journey_leg][1] < (best_fit[1] + math.pi/4) and
+        v['park_crowflys_distance_and_bearing'][journey_leg][1] > (best_fit[1] - math.pi/4) and
+        # select only parks closer that the crowflys distance from origin to destination
+        v['park_crowflys_distance_and_bearing'][journey_leg][0] < best_fit[0] and
+        # select parks within users tolerance for rambling
+        v['park_distance_from_bestfit_line'][journey_leg] <= rambling_tolerance and
+        v['park_distance_from_bestfit_line'][journey_leg] >= 0}
+        print(len(parks_within_perp_distance))
+        return parks_within_perp_distance
+
     def get(self, _request, currentWaypoint, destination, ramblingTolerance):
         rambling_tolerance = int(ramblingTolerance)
         current_waypoint_array = [float(x) for x in currentWaypoint.split(',')]
         destination_array = [float(x) for x in destination.split(',')]
-        best_fit = DistanceAndBearing.crowflys_bearing(self, current_waypoint_array, destination_array)
+        best_fit_origin_to_destination = DistanceAndBearing.crowflys_bearing(self, current_waypoint_array, destination_array)
 
         queryset = Location.objects.all()
         serializer = BoundingBoxSerializer(queryset, many=True)
@@ -50,39 +64,30 @@ class RouteThenBoundingBox(APIView):
             parks_dict[park['id']] = {
             'park_lon_lat': park_lon_lat,
             'park_crowflys_distance_and_bearing': {'initial': park_crowflys_distance_and_bearing},
-            'park_distance_from_bestfit_line': {'initial': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit, park_crowflys_distance_and_bearing)},
+            'park_distance_from_bestfit_line': {'initial': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_origin_to_destination, park_crowflys_distance_and_bearing)},
             'size_in_hectares': size_in_hectares_float}
 
-        parks_within_perp_distance = {
-        k:v for (k, v) in parks_dict.items() if
-        # select only parks within ± 45 degrees of inital bearing towards destination
-        v['park_crowflys_distance_and_bearing']['initial'][1] < (best_fit[1] + math.pi/4) and
-        v['park_crowflys_distance_and_bearing']['initial'][1] > (best_fit[1] - math.pi/4) and
-        # select only parks closer that the crowflys distance from origin to destination
-        v['park_crowflys_distance_and_bearing']['initial'][0] < best_fit[0] and
-        # select parks within users tolerance for rambling
-        v['park_distance_from_bestfit_line']['initial'] <= rambling_tolerance and
-        v['park_distance_from_bestfit_line']['initial'] >= 0}
+        parks_within_perp_distance = self.parks_within_perp_distance(parks_dict, 'initial', best_fit_origin_to_destination, rambling_tolerance)
 
         largest_park = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
 
         best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_array, parks_within_perp_distance[largest_park]['park_lon_lat'])
-        print('best_fit_to_largest_park',best_fit_to_largest_park)
 
         for k, v in parks_within_perp_distance.items():
             perp_distance_origin_to_largest_park = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_to_largest_park, v['park_crowflys_distance_and_bearing']['initial'] )
             # v.update({'perp_distance_origin_to_largest_park':perp_distance_origin_to_largest_park})
             v.update({'park_distance_from_bestfit_line':{'initial':v['park_distance_from_bestfit_line']['initial'], 'to_largest_park':perp_distance_origin_to_largest_park}})
 
-        print(parks_within_perp_distance)
+        print('parks_within_perp_distance_update', len(parks_within_perp_distance))
 
         parks_within_perp_distance_origin_to_largest_park = {k:v for (k, v) in parks_within_perp_distance.items() if
+# THIS SHOULD BE AMMENDED TO LIMIT TO PARKS LESS THAN DISTANCE TO LARGEST PARK.
         # select only parks closer that the crowflys distance from origin to destination
         # v['park_crowflys_distance_and_bearing']['initial'][0] < best_fit[0] and
         # select parks within users tolerance for rambling
         v['park_distance_from_bestfit_line']['to_largest_park'] <= rambling_tolerance/5 and
         v['park_distance_from_bestfit_line']['to_largest_park'] > 0}
-        print('parks_within_perp_distance_origin_to_largest_park',parks_within_perp_distance_origin_to_largest_park)
+        print('parks_within_perp_distance_origin_to_largest_park', len(parks_within_perp_distance_origin_to_largest_park))
 
         parks_within_perp_distance_lon_lat_list = [x['park_lon_lat'] for x in parks_within_perp_distance.values()]
         return Response(parks_within_perp_distance_lon_lat_list)
