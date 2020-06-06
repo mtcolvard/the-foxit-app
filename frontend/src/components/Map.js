@@ -211,7 +211,7 @@ class Map extends React.Component {
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
-            <Pins data={parksWithinPerpDistance} />
+            <Pins data={parksWithinPerpDistance} color={'#da0'}/>
             {routeGeometry &&
               <Source id="my-data" type="geojson" data={routeGeometry}>
                 <Layer

@@ -15,7 +15,7 @@ const SIZE = 20
 // Important for perf: the markers never change, avoid rerender when the map viewport changes
 export default class Pins extends PureComponent {
   render() {
-    const {data, onClick} = this.props
+    const {data, color, onClick} = this.props
     console.log('pins', data)
 
     return data.map((park, index) => (
@@ -25,7 +25,7 @@ export default class Pins extends PureComponent {
           viewBox="0 0 24 24"
           style={{
             cursor: 'pointer',
-            fill: '#d00',
+            fill: `${color}`,
             stroke: 'none',
             transform: `translate(${-SIZE / 2}px,${-SIZE}px)`
           }}
