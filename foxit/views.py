@@ -28,22 +28,16 @@ class LocationDetail(RetrieveUpdateDestroyAPIView):
 
 class RouteThenBoundingBox(APIView):
     def parks_within_perp_distance(self, parks_dict, orientation, journey_leg, best_fit, rambling_tolerance):
-        if initial_journey_leg:
-            parks_within_perp_distance = {
-            k:v for (k, v) in parks_dict.items() if
-                # select only parks within ± 45 degrees of inital bearing towards destination
-                v['crowflys_distance_and_bearing'][orientation][1] < (best_fit[1] + math.pi/4) and
-                v['crowflys_distance_and_bearing'][orientation][1] > (best_fit[1] - math.pi/4) and
-                # select only parks closer than the crowflys distance from origin to destination
-                v['crowflys_distance_and_bearing'][orientation][0] < best_fit[0] and
-                # select parks within users tolerance for rambling
-                v['distance_from_bestfit_line'][journey_leg] <= rambling_tolerance and
-                v['distance_from_bestfit_line'][journey_leg] >= 0}
-        else:
-            parks_within_perp_distance = {
-            k:v for (k, v) in parks_dict.items() if
-                v['distance_from_bestfit_line'][journey_leg] <= rambling_tolerance and
-                v['distance_from_bestfit_line'][journey_leg] >= 0}
+        parks_within_perp_distance = {
+        k:v for (k, v) in parks_dict.items() if
+            # select only parks within ± 45 degrees of inital bearing towards destination
+            v['crowflys_distance_and_bearing'][orientation][1] < (best_fit[1] + math.pi/4) and
+            v['crowflys_distance_and_bearing'][orientation][1] > (best_fit[1] - math.pi/4) and
+            # select only parks closer than the crowflys distance from origin to destination
+            v['crowflys_distance_and_bearing'][orientation][0] < best_fit[0] and
+            # select parks within users tolerance for rambling
+            v['distance_from_bestfit_line'][journey_leg] <= rambling_tolerance and
+            v['distance_from_bestfit_line'][journey_leg] >= 0}
         print(len(parks_within_perp_distance))
         return parks_within_perp_distance
 
@@ -89,7 +83,7 @@ class RouteThenBoundingBox(APIView):
             'distance_from_bestfit_line':{'origin_to_destination': v['distance_from_bestfit_line']['origin_to_destination'], 'to_largest_park': perp_distance_origin_to_largest_park, 'from_largest_park': perp_distance_largest_park_to_destination}})
         print('parks_within_perp_distance_update', len(parks_within_perp_distance))
 
-        parks_within_perp_distance_origin_to_largest_park = self.parks_within_perp_distance(parks_within_perp_distance, 'from_origin', 'to_largest_park', best_fit_to_largest_park, rambling_tolerance/5)
+        parks_within_perp_distance_origin_to_largest_park = self.parks_within_perp_distance(parks_within_perp_distance, 'from_origin', 'to_largest_park', best_fit_to_largest_park, rambling_tolerance/3)
 
         parks_within_perp_distance_largest_park_to_destination = self.parks_within_perp_distance(parks_within_perp_distance, 'from_largest_park', 'from_largest_park', best_fit_from_largest_park, rambling_tolerance/3)
 
