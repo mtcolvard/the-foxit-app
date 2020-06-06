@@ -132,7 +132,7 @@ class Map extends React.Component {
 // N = -0.097235, 51.559927
   handlefakeclick(e) {
     e.preventDefault()
-    this.sendDestinationToBackend([-0.042499, 51.543832])
+    this.sendDestinationToBackend([-0.097235, 51.559927])
   }
 
 
@@ -151,7 +151,8 @@ class Map extends React.Component {
   sendDestinationToBackend(data) {
     axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${data}/${this.state.ramblingTolerance}`)
       .then(res => this.setState({
-        parksWithinPerpDistance: res.data
+        parksWithinPerpDistance: res.data,
+        routeGeometry: res.data
       }))
       .then(console.log('parksWithinPerpDistance', this.state.parksWithinPerpDistance))
   }
@@ -178,6 +179,9 @@ class Map extends React.Component {
     const directionsLayer = {routeGeometry}
     return (
       <div>
+        <div>
+          <h1 className="title">Wonder'boutLondon?</h1>
+        </div>
         <form onSubmit={this.handleSubmit}>
           <input
             className="input is-primary"
@@ -211,7 +215,6 @@ class Map extends React.Component {
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
-            <Pins data={parksWithinPerpDistance} color={'#da0'}/>
             {routeGeometry &&
               <Source id="my-data" type="geojson" data={routeGeometry}>
                 <Layer

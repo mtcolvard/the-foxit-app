@@ -65,38 +65,39 @@ class RouteThenBoundingBox(APIView):
             'crowflys_distance_and_bearing': {'from_origin': crowflys_distance_and_bearing},
             'distance_from_bestfit_line': {'origin_to_destination': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_origin_to_destination, crowflys_distance_and_bearing)},
             'size_in_hectares': size_in_hectares_float}
-
         parks_within_perp_distance = self.parks_within_perp_distance(parks_dict, 'from_origin', 'origin_to_destination', best_fit_origin_to_destination, rambling_tolerance)
+
         largest_park_key = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
         largest_park_lon_lat = parks_within_perp_distance[largest_park_key]['lon_lat']
-        best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_lon_lat, parks_within_perp_distance[largest_park_key]['lon_lat'])
+
+        best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_lon_lat, largest_park_lon_lat)
         best_fit_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, destination_lon_lat)
 
         for k, v in parks_within_perp_distance.items():
-            perp_distance_origin_to_largest_park = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_to_largest_park, v['crowflys_distance_and_bearing']['from_origin'])
-
             crowflys_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, v['lon_lat'])
-
+            perp_distance_origin_to_largest_park = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_to_largest_park, v['crowflys_distance_and_bearing']['from_origin'])
             perp_distance_largest_park_to_destination = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_from_largest_park, crowflys_from_largest_park)
 
             v.update({'crowflys_distance_and_bearing':{'from_origin': v['crowflys_distance_and_bearing']['from_origin'], 'from_largest_park': crowflys_from_largest_park},
             'distance_from_bestfit_line':{'origin_to_destination': v['distance_from_bestfit_line']['origin_to_destination'], 'to_largest_park': perp_distance_origin_to_largest_park, 'from_largest_park': perp_distance_largest_park_to_destination}})
-        print('parks_within_perp_distance_update', len(parks_within_perp_distance))
 
         parks_within_perp_distance_origin_to_largest_park = self.parks_within_perp_distance(parks_within_perp_distance, 'from_origin', 'to_largest_park', best_fit_to_largest_park, rambling_tolerance/3)
 
         parks_within_perp_distance_largest_park_to_destination = self.parks_within_perp_distance(parks_within_perp_distance, 'from_largest_park', 'from_largest_park', best_fit_from_largest_park, rambling_tolerance/3)
 
-        print('parks_within_perp_distance_origin_to_largest_park', parks_within_perp_distance_origin_to_largest_park)
-        print('parks_within_perp_distance_largest_park_to_destination', parks_within_perp_distance_largest_park_to_destination)
+        total_dict = {**parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination}
 
-        parks_within_perp_distance_list = [x['lon_lat'] for x in parks_within_perp_distance.values()]
+        total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
 
-        parks_within_perp_distance_origin_to_largest_park_list = [x['lon_lat'] for x in parks_within_perp_distance_origin_to_largest_park.values()]
+        total_dict_lon_lat = [current_waypoint_lon_lat]+[x['lon_lat'] for x in total_dict_sorted_by_distance_from_origin.values()]+[destination_lon_lat]
+        # total_dict_lon_lat = [current_waypoint_lon_lat]+[destination_lon_lat]
 
-        parks_within_perp_distance_largest_park_to_destination_list = [x['lon_lat'] for x in parks_within_perp_distance_largest_park_to_destination.values()]
 
-        return Response([current_waypoint_lon_lat] + [destination_lon_lat] +parks_within_perp_distance_origin_to_largest_park_list + parks_within_perp_distance_largest_park_to_destination_list)
+        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, total_dict_lon_lat)
+
+
+
+        return Response(routeGeometry)
 
 # parks_within_perp_distance_largest_park_to_destination_list + parks_within_perp_distance_origin_to_largest_park_list
 # YOU SHOULD PRIORITIZE PARKS WITH THE GREATEST AREA.
@@ -165,13 +166,9 @@ class BoundingBox(APIView):
             next_waypoint_id = matrix_result['next_waypoint_id']
             parks_within_bounding_box.clear()
             dict_of_waypoints = matrix_result['dict_of_waypoints']
-            print('dict_of_waypoints', dict_of_waypoints)
+            parks_lonLat_list = list(dict_of_waypoints.values())[:25]
 
-
-            # if distance_from_next_waypoint_to_destination > rambling_tolerance:
-            #     continue
-            # else:
-        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, dict_of_waypoints)
+        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, parks_lonLat_list)
         print('routeGeometry', routeGeometry)
 
         return Response(routeGeometry)
@@ -190,22 +187,6 @@ class MapMatrixView(APIView):
         print(response.json())
         # calculate the closest and just send that back
         return Response(response.json())
-
-#THIS IS THE ORIGINAL IMPLEMENTATION RECEIVING INSTRUCTIONS FROM THE FRONT END
-# class MapMatrixView(APIView):
-#     def get(self, request, coords):
-#         print(request, coords)
-#         params = {
-#             'sources': [0, 1],
-#             # 'destinations': request.GET.get('destinations'),
-#             # 'destinations': '1;2;3;4',
-#             'access_token': 'pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ'
-#         }
-#         response = requests.get(f'https://api.mapbox.com/directions-matrix/v1/mapbox/walking/{coords}', params=params)
-#         print(response.json())
-#         # calculate the closest and just send that back
-#         return Response(response.json())
-
 
 class MapDirectionsView(APIView):
     def get(self, _request, coords):
