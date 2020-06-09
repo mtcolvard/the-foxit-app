@@ -4,6 +4,7 @@ import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
 import DropDownDisplay from './DropDownDisplay'
+import Directions from './Directions'
 
 // import Marker from './Marker'
 import Pins from './Pins'
@@ -51,7 +52,7 @@ class Map extends React.Component {
       routeGeometry: routeGeometryStateDefault,
       parksWithinPerpDistance: [[-0.071132, 51.518891]],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
-        height: 'calc(100vh - 80px)',
+        height: '500px',
         width: '100vw'},
       formData: '',
       directions: '',
@@ -135,7 +136,6 @@ class Map extends React.Component {
     this.sendDestinationToBackend([-0.097235, 51.559927])
   }
 
-
   dropDownData(data) {
     this.setState({
       isSearchTriggered: !this.state.isSearchTriggered,
@@ -203,13 +203,7 @@ class Map extends React.Component {
             />
           )}
         </div>
-        <div className="iconMenu">
-          <button className="button" onClick={this.handlefakeclick}>Search
-          </button>
-          <button className="button">Directions
-          </button>
-        </div>
-        <div>
+        <div className="container">
           <ReactMapGl {...viewport}
             mapboxApiAccessToken={process.env.MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
@@ -237,6 +231,12 @@ class Map extends React.Component {
             </div>
           </ReactMapGl>
         </div>
+        <div className="container">
+          <button className="button" onClick={this.handlefakeclick}>Search
+          </button>
+          <button className="button">
+          </button>
+        </div>
       </div>
 
     )
@@ -247,8 +247,13 @@ export default Map
 
 
 
+// this goes just below forms
+// <div>
+//   <Directions/>
+// </div>
 
-// // goes above directions && <Source ...
+
+// goes above directions && <Source
 // {dictOfWaypoints.map(point => (
 //   <Marker
 //     key={point.id}

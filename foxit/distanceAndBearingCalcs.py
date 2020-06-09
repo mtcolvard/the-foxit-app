@@ -26,8 +26,6 @@ class DistanceAndBearing:
         bearing = (θ*180/math.pi + 360) % 360
         return crowflys, θ
 
-
-
     def perpendicular_distance_from_bestfit_line(self, bestFit, waypointFit):
         angle_to_waypoint = math.fabs(bestFit[1] - waypointFit[1])
         perp_distance_to_waypoint = waypointFit[0] * math.sin(angle_to_waypoint)
