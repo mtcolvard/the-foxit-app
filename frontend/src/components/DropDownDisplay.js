@@ -6,6 +6,10 @@ class DropDownDisplay extends React.Component {
     this.handleClick = this.handleClick.bind(this)
   }
 
+  // componentDidMount() {
+  //   this.props.handleSubmit(e)
+  // }
+
   handleClick(e) {
     this.props.selectDestination(this.props.searchResponseData.features[this.props.index])
     console.log('handleClick', this.props.index)

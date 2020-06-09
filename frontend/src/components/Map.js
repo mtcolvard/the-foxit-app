@@ -52,9 +52,10 @@ class Map extends React.Component {
       routeGeometry: routeGeometryStateDefault,
       parksWithinPerpDistance: [[-0.071132, 51.518891]],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
-        height: '500px',
+        height: '100vh',
         width: '100vw'},
       formData: '',
+      bottomFormData: '',
       directions: '',
       tabOpen: false,
       searchResponseData: {
@@ -75,28 +76,6 @@ class Map extends React.Component {
     this.handlefakeclick = this.handlefakeclick.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
-
-
-  // componentDidMount() {
-  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${this.state.ramblingTolerance}`)
-  //     .then(res => this.setState({
-  //       closestWaypoints: res.data[0]
-  //     }))
-  //     .then(console.log('closestWaypoints', this.state.closestWaypoints))
-  //
-  // }
-
-  // THIS WILL NEED A PROMPT TO ASK FOR ORIGIN COORDINATES OR TO ALLOW GEOLOCATOR BEFORE DIRECTION SEARCH
-
-  // this.queryDbForClosestParks = this.queryDbForClosestParks.bind(this)
-  // queryDbForClosestParks() {
-  //   axios.get(`api/mapbox/matrix/${this.state.originLonLat}`)
-  //     .then(res => this.setState({
-  //       closestWaypoints: res.data
-  //     }))
-  //     .then(console.log('closestWaypoints', this.state.closestWaypoints))
-  // }
-
 
   handleMouseDown( {lngLat} ) {
     this.setState({viewport: {
@@ -139,7 +118,7 @@ class Map extends React.Component {
   dropDownData(data) {
     this.setState({
       isSearchTriggered: !this.state.isSearchTriggered,
-      formData: data.place_name,
+      bottomFormData: data.place_name,
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
@@ -157,24 +136,12 @@ class Map extends React.Component {
       .then(console.log('parksWithinPerpDistance', this.state.parksWithinPerpDistance))
   }
 
-// FOR ORIGINAL BOUNDING BOX VIEW
-  // sendDestinationToBackend(data) {
-  //   axios.get(`api/boundingbox/${this.state.originLonLat}/${data}/${this.state.ramblingTolerance}`)
-  //     .then(res => this.setState({
-  //       routeGeometry: res.data
-  //     }))
-  //     .then(console.log('routeGeometry', this.state.routeGeometry))
-  // }
 
-  // getWalkingRoute(data) {
-  //   axios.get(`api/mapbox/directions/${this.state.originLonLat[0]},${this.state.originLonLat[1]};${data[0]},${data[1]}`)
-  //     .then(res => this.setState({ directions: res.data.routes[0].geometry }))
-  // }
 
 
 
   render () {
-    const {viewport, directions, formData, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, directions, formData, bottomFormData, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -182,28 +149,7 @@ class Map extends React.Component {
         <div>
           <h1 className="title">Wonder'boutLondon?</h1>
         </div>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            className="input is-primary"
-            type="text"
-            placeholder='Add destination to plan route'
-            onChange={this.handleChange}
-            value={formData}
-          />
-        </form>
-        <div>
-          {searchResponseData.features.map((element, index) =>
-            <DropDownDisplay
-              key={element.id}
-              index={index}
-              dropDownDisplayName={element.place_name}
-              searchResponseData={searchResponseData}
-              selectDestination={this.dropDownData}
-              isSearchTriggered={isSearchTriggered}
-            />
-          )}
-        </div>
-        <div className="container">
+        <div className="mapcontainer">
           <ReactMapGl {...viewport}
             mapboxApiAccessToken={process.env.MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
@@ -231,7 +177,42 @@ class Map extends React.Component {
             </div>
           </ReactMapGl>
         </div>
+        <form onSubmit={this.handleSubmit}>
+          <input
+            className="input is-primary"
+            type="text"
+            placeholder='Add destination to plan route'
+            onChange={this.handleChange}
+            value={formData}
+          />
+        </form>
+        <div className="dropdown">
+          <div>
+            {searchResponseData.features.map((element, index) =>
+              <DropDownDisplay
+                key={element.id}
+                index={index}
+                dropDownDisplayName={element.place_name}
+                searchResponseData={searchResponseData}
+                selectDestination={this.dropDownData}
+                isSearchTriggered={isSearchTriggered}
+              />
+            )}
+          </div>
+        </div>
         <div className="container">
+        <div className="bottomForm">
+            {bottomFormData &&
+              <form>
+                <input className="input is-primary"
+                  type="text"
+                  value={bottomFormData}
+                />
+            </form>}
+        </div>
+        </div>
+
+        <div className="container" id="bottomMenu">
           <button className="button" onClick={this.handlefakeclick}>Search
           </button>
           <button className="button">

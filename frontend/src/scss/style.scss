@@ -9,15 +9,27 @@ html, body {
   box-sizing: border-box;
 }
 
-.iconMenu {
-  height: 80px;
+
+#bottomMenu {
+  position:fixed;
+  bottom: 5px;
 }
 
-// button {
-//   height: 36px;
-//   line-height: 34px;
-//   padding: 0 12px;
-// }
+.dropdown {
+  position: fixed;
+  top: 10 px
+}
+
+.bottomForm {
+  position: fixed;
+  bottom: 50px;
+}
+
+
+.mapcontainer {
+  position: absolute;
+}
+
 
 .map-marker {
   height: 20px;
