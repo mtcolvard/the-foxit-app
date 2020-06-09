@@ -177,15 +177,27 @@ class Map extends React.Component {
             </div>
           </ReactMapGl>
         </div>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            className="input is-primary"
-            type="text"
-            placeholder='Add destination to plan route'
-            onChange={this.handleChange}
-            value={formData}
-          />
-        </form>
+        <div className="field has-addons">
+          <p className="control">
+            <a className="button">
+              back
+            </a>
+          </p>
+          <form className="field is-expanded" onSubmit={this.handleSubmit}>
+            <input
+              className="input is-primary"
+              type="text"
+              placeholder='Add destination to plan route'
+              onChange={this.handleChange}
+              value={formData}
+            />
+          </form>
+          <p className="control">
+            <a className="button">
+            delete
+            </a>
+          </p>
+        </div>
         <div className="dropdown">
           <div>
             {searchResponseData.features.map((element, index) =>
@@ -200,7 +212,7 @@ class Map extends React.Component {
             )}
           </div>
         </div>
-        <div className="container">
+        <div className="section">
         <div className="bottomForm">
             {bottomFormData &&
               <form>
