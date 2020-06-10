@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactMapGl, {MapGl, BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
@@ -74,6 +75,7 @@ class Map extends React.Component {
     this.dropDownData = this.dropDownData.bind(this)
     this.sendDestinationToBackend = this.sendDestinationToBackend.bind(this)
     this.handlefakeclick = this.handlefakeclick.bind(this)
+    this.handleClear = this.handleClear.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
@@ -104,6 +106,14 @@ class Map extends React.Component {
       }))
       // .then(() => this.queryDbForClosestParks())
       .then(console.log('response', this.state.destinationLonLat))
+  }
+
+  handleClear(e) {
+    e.preventDefault()
+    this.setState({
+      searchResponseData: searchReponseStateDefault,
+      formData: ''
+    })
   }
 // I = -0.042499, 51.543832
 // II = -0.032414, 51.446282
@@ -176,59 +186,60 @@ class Map extends React.Component {
               <NavigationControl/>
             </div>
           </ReactMapGl>
-        </div>
-        <div className="field has-addons">
-          <p className="control">
-            <a className="button">
-              back
-            </a>
-          </p>
-          <form className="field is-expanded" onSubmit={this.handleSubmit}>
-            <input
-              className="input is-primary"
-              type="text"
-              placeholder='Add destination to plan route'
-              onChange={this.handleChange}
-              value={formData}
-            />
-          </form>
-          <p className="control">
-            <a className="button">
-            delete
-            </a>
-          </p>
-        </div>
-        <div className="dropdown">
-          <div>
-            {searchResponseData.features.map((element, index) =>
-              <DropDownDisplay
-                key={element.id}
-                index={index}
-                dropDownDisplayName={element.place_name}
-                searchResponseData={searchResponseData}
-                selectDestination={this.dropDownData}
-                isSearchTriggered={isSearchTriggered}
-              />
-            )}
-          </div>
-        </div>
-        <div className="section">
-        <div className="bottomForm">
-            {bottomFormData &&
-              <form>
-                <input className="input is-primary"
+        <div className="bodyContainer">
+          <div className="field has-addons" >
+            <div className="control">
+              <a className="button is-radiusless">
+                <span className="icon">
+                  <FontAwesomeIcon icon="arrow-left" />
+                </span>
+              </a>
+            </div>
+            <div className="control is-expanded">
+              <form onSubmit={this.handleSubmit}>
+                <input
+                  className="input is-primary"
                   type="text"
-                  value={bottomFormData}
+                  placeholder='Add destination to plan route'
+                  onChange={this.handleChange}
+                  value={formData}
                 />
-            </form>}
-        </div>
-        </div>
-
-        <div className="container" id="bottomMenu">
-          <button className="button" onClick={this.handlefakeclick}>Search
-          </button>
-          <button className="button">
-          </button>
+              </form>
+            </div>
+            <div className="control">
+              <a className="button is-radiusless" onClick={this.handleClear}>
+                <span className="icon">
+                  <FontAwesomeIcon icon="times" />
+                </span>
+              </a>
+            </div>
+          </div>
+          <div className="dropdown">
+            <div>
+              {searchResponseData.features.map((element, index) =>
+                <DropDownDisplay
+                  key={element.id}
+                  index={index}
+                  dropDownDisplayName={element.place_name}
+                  searchResponseData={searchResponseData}
+                  selectDestination={this.dropDownData}
+                  isSearchTriggered={isSearchTriggered}
+                />
+              )}
+            </div>
+          </div>
+          </div>
+          {bottomFormData &&
+              <div className="bottomFormContainer">
+                <p className="button is-static is-fullwidth">{bottomFormData}
+                </p>
+                <button className="button is-info" >
+                  <span className="icon">
+                    <FontAwesomeIcon icon="directions"/>
+                  </span>
+                  <span>Directions</span>
+                </button>
+              </div>}
         </div>
       </div>
 
@@ -237,6 +248,29 @@ class Map extends React.Component {
 }
 
 export default Map
+
+// <div className="container" id="bottomMenu">
+//   <button className="button" onClick={this.handlefakeclick}>Search
+//   </button>
+//   <button className="button">
+//   </button>
+// </div>
+
+
+
+// <div className="section">
+//   <div className="bottomForm">
+//   <div className="control is-expanded">
+//     {bottomFormData &&
+//       <form>
+//         <input className="input is-primary"
+//           type="text"
+//           value={bottomFormData}
+//         />
+//       </form>}
+//   </div>
+//   </div>
+// </div>
 
 
 

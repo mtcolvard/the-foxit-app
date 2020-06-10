@@ -9,26 +9,36 @@ html, body {
   box-sizing: border-box;
 }
 
+// #bottomMenu {
+//   position:fixed;
+//   bottom: 5px;
+// }
 
-#bottomMenu {
-  position:fixed;
-  bottom: 5px;
-}
-
-.dropdown {
-  position: fixed;
-  top: 10 px
-}
-
-.bottomForm {
-  position: fixed;
-  bottom: 50px;
-}
-
+// #bottomForm {
+//   bottom: 50px;
+// }
 
 .mapcontainer {
-  position: absolute;
+  position:relative
 }
+
+.bodyContainer {
+  position:absolute;
+  top:0px;
+}
+.bottomFormContainer {
+  position:absolute;
+  bottom:0px;
+}
+
+
+// .dropdown {
+//   position: fixed;
+// }
+
+
+
+
 
 
 .map-marker {
