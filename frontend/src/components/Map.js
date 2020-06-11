@@ -5,7 +5,7 @@ import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
 import DropDownDisplay from './DropDownDisplay'
-import Directions from './Directions'
+import DirectionsDisplay from './DirectionsDisplay'
 
 // import Marker from './Marker'
 import Pins from './Pins'
@@ -56,7 +56,10 @@ class Map extends React.Component {
         height: '100vh',
         width: '100vw'},
       formData: '',
-      bottomFormData: '',
+      startingLocation: '',
+      bottomDestinationData: '',
+      destinationData: '',
+      displayDirectionsDisplay: false,
       directions: '',
       tabOpen: false,
       searchResponseData: {
@@ -74,8 +77,9 @@ class Map extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.dropDownData = this.dropDownData.bind(this)
     this.sendDestinationToBackend = this.sendDestinationToBackend.bind(this)
-    this.handlefakeclick = this.handlefakeclick.bind(this)
+    // this.handlefakeclick = this.handlefakeclick.bind(this)
     this.handleClear = this.handleClear.bind(this)
+    this.handleDirectionsButtonClick = this.handleDirectionsButtonClick.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
@@ -95,8 +99,6 @@ class Map extends React.Component {
     console.log('handleChange', this.state.formData)
   }
 
-  // YOU HAVE A BUG HERE, WHERE IF YOU HIT RETURN TWICE IT CLEARS THE BULMA FORMATING AND DROPS DOWN AN UNFORMATTED LIST AND THEN IF YOU CLICK ON ONE OF THE UNFORMATTED DIVS IT CREATES A BLANK PHANTOM FORMATTED BOX
-
   handleSubmit(e) {
     e.preventDefault()
     axios.get(`api/mapbox/geocoder/${this.state.formData}`)
@@ -114,26 +116,24 @@ class Map extends React.Component {
         isSearchTriggered: false,
         searchResponseData: searchReponseStateDefault,
         formData: '',
-        bottomFormData: ''
+        bottomDestinationData: ''
       })
     } else {
       console.log('formdata empty')
     }
   }
-// I = -0.042499, 51.543832
-// II = -0.032414, 51.446282
-// III = -0.115405, 51.495166
-// IV = -0.104109, 51.531267
-// N = -0.097235, 51.559927
-  handlefakeclick(e) {
-    e.preventDefault()
-    this.sendDestinationToBackend([-0.097235, 51.559927])
+
+  handleDirectionsButtonClick() {
+    this.setState({
+      displayDirectionsDisplay: true
+    })
   }
 
   dropDownData(data) {
     this.setState({
       isSearchTriggered: false,
-      bottomFormData: data.place_name,
+      destinationData: data,
+      bottomDestinationData: data.place_name,
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
@@ -152,11 +152,8 @@ class Map extends React.Component {
   }
 
 
-
-
-
   render () {
-    const {viewport, directions, formData, bottomFormData, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, formData, bottomDestinationData, startingLocation, destinationData, displayDirectionsDisplay, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -192,33 +189,39 @@ class Map extends React.Component {
             </div>
           </ReactMapGl>
           <div className="bodyContainer">
-            <div className="field has-addons" >
-              <div className="control">
-                <a className="button is-radiusless">
-                  <span className="icon">
-                    <FontAwesomeIcon icon="arrow-left" />
-                  </span>
-                </a>
-              </div>
-              <div className="control is-expanded">
-                <form onSubmit={this.handleSubmit}>
-                  <input
-                    className="input is-primary"
-                    type="text"
-                    placeholder='Add destination to plan route'
-                    onChange={this.handleChange}
-                    value={formData}
-                  />
-                </form>
-              </div>
-              <div className="control">
-                <a className="button is-radiusless" onClick={this.handleClear}>
-                  <span className="icon">
-                    <FontAwesomeIcon icon="times" />
-                  </span>
-                </a>
-              </div>
-            </div>
+            {displayDirectionsDisplay ? (
+              <DirectionsDisplay
+                origin={startingLocation}
+                destination={destinationData.place_name}/>) :
+              (
+                <div className="field has-addons" >
+                  <div className="control">
+                    <a className="button is-radiusless">
+                      <span className="icon">
+                        <FontAwesomeIcon icon="arrow-left" />
+                      </span>
+                    </a>
+                  </div>
+                  <div className="control is-expanded">
+                    <form onSubmit={this.handleSubmit}>
+                      <input
+                        className="input is-primary"
+                        type="text"
+                        placeholder='Add destination to plan route'
+                        onChange={this.handleChange}
+                        value={formData}
+                      />
+                    </form>
+                  </div>
+                  <div className="control">
+                    <a className="button is-radiusless" onClick={this.handleClear}>
+                      <span className="icon">
+                        <FontAwesomeIcon icon="times" />
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              )}
             <div className="dropdown">
               <div>
                 {searchResponseData.features.map((element, index) =>
@@ -234,18 +237,18 @@ class Map extends React.Component {
               </div>
             </div>
           </div>
-          {bottomFormData &&
+          {bottomDestinationData &&
               <div className="bottomFormContainer">
-              <div className="box is-radiusless">
-                <p className="button is-static is-fullwidth">{bottomFormData}
-                </p>
-                <button className="button is-info" >
-                  <span className="icon">
-                    <FontAwesomeIcon icon="directions"/>
-                  </span>
-                  <span>Directions</span>
-                </button>
-              </div>
+                <div className="box is-radiusless">
+                  <p className="button is-static is-fullwidth">{bottomDestinationData}
+                  </p>
+                  <button className="button is-info" onClick={this.handleDirectionsButtonClick} >
+                    <span className="icon">
+                      <FontAwesomeIcon icon="directions"/>
+                    </span>
+                    <span>Directions</span>
+                  </button>
+                </div>
               </div>}
         </div>
       </div>
@@ -255,6 +258,27 @@ class Map extends React.Component {
 }
 
 export default Map
+
+// {displayDirectionsDisplay &&
+//   destinationData ? (
+//     <DirectionsDisplay
+//       origin={startingLocation}
+//       destination={destinationData.place_name}/>) :
+//   (<DirectionsDisplay
+//     origin={startingLocation}
+//     destination={''}/>)
+// }
+
+
+// I = -0.042499, 51.543832
+// II = -0.032414, 51.446282
+// III = -0.115405, 51.495166
+// IV = -0.104109, 51.531267
+// N = -0.097235, 51.559927
+  // handlefakeclick(e) {
+  //   e.preventDefault()
+  //   this.sendDestinationToBackend([-0.097235, 51.559927])
+  // }
 
 // <div className="container" id="bottomMenu">
 //   <button className="button" onClick={this.handlefakeclick}>Search
@@ -268,11 +292,11 @@ export default Map
 // <div className="section">
 //   <div className="bottomForm">
 //   <div className="control is-expanded">
-//     {bottomFormData &&
+//     {bottomDestinationData &&
 //       <form>
 //         <input className="input is-primary"
 //           type="text"
-//           value={bottomFormData}
+//           value={bottomDestinationData}
 //         />
 //       </form>}
 //   </div>
