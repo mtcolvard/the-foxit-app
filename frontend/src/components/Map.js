@@ -80,6 +80,7 @@ class Map extends React.Component {
     // this.handlefakeclick = this.handlefakeclick.bind(this)
     this.handleClear = this.handleClear.bind(this)
     this.handleDirectionsButtonClick = this.handleDirectionsButtonClick.bind(this)
+    this.deselectDirectionsDisplay = this.deselectDirectionsDisplay.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
@@ -124,9 +125,11 @@ class Map extends React.Component {
   }
 
   handleDirectionsButtonClick() {
-    this.setState({
-      displayDirectionsDisplay: true
-    })
+    this.setState({ displayDirectionsDisplay: true })
+  }
+
+  deselectDirectionsDisplay() {
+    this.setState({ displayDirectionsDisplay: false })
   }
 
   dropDownData(data) {
@@ -192,7 +195,8 @@ class Map extends React.Component {
             {displayDirectionsDisplay ? (
               <DirectionsDisplay
                 origin={startingLocation}
-                destination={destinationData.place_name}/>) :
+                destination={destinationData.place_name}
+                onArrowLeft={this.deselectDirectionsDisplay}/>) :
               (
                 <div className="field has-addons" >
                   <div className="control">

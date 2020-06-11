@@ -1,31 +1,47 @@
 import React from 'react'
-import {Link} from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 
 class DirectionsDisplay extends React.Component {
   constructor() {
     super()
+    this.handleClick = this.handleClick.bind(this)
   }
 
+  handleClick() {
+    this.props.onArrowLeft()
+  }
 
   render() {
     const startingLocation = this.props.startingLocation
     const destination = this.props.destination
     return (
       <div className="box">
-        <div className="field">
-          <div className="control">
-            <Link to={'/selectOrigin/'}>
-              <button className="button is-expanded" >
-            Your origin
-              </button>
-            </Link>
+        <div className="columns is-mobile">
+          <div className="column">
+            <a className="button is-radiusless" onClick={this.handleClick}>
+              <span className="icon">
+                <FontAwesomeIcon icon="arrow-left" />
+              </span>
+            </a>
           </div>
-          <div className="control">
-            <input readOnly className="input"
-              type="text"
-              placeholder="Choose destination"
-              value={destination}
-            />
+          <div className="column is-11">
+            <div className="field">
+              <div className="control">
+                <input className="input"
+                  type="text"
+                  placeholder="Add your location to plan route"
+                  value={startingLocation}
+                />
+              </div>
+              <div className="control">
+                <input readOnly className="input"
+                  type="text"
+                  placeholder="Choose destination"
+                  value={destination}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -35,11 +51,7 @@ class DirectionsDisplay extends React.Component {
 
 export default DirectionsDisplay
 
-// <input className="input"
-//   type="text"
-//   placeholder="Add your location to plan route"
-//   value={startingLocation}
-// />
+
 
 
 

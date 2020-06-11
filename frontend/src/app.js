@@ -8,14 +8,12 @@ library.add(faArrowLeft, faTimes, faDirections)
 import './scss/style.scss'
 import Map from './components/Map'
 import DropDownDisplay from './components/DropDownDisplay'
-import SelectOrigin from './components/SelectOrigin'
 
 class App extends React.Component {
   render () {
     return(
       <HashRouter>
         <Switch>
-          <Route path="/selectOrigin" component={SelectOrigin}/>
           <Route path="/" component={Map} />
         </Switch>
       </HashRouter>
