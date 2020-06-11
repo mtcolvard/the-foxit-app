@@ -101,19 +101,24 @@ class Map extends React.Component {
     e.preventDefault()
     axios.get(`api/mapbox/geocoder/${this.state.formData}`)
       .then(res => this.setState({
-        isSearchTriggered: !this.state.isSearchTriggered,
+        isSearchTriggered: true,
         searchResponseData: res.data
       }))
       // .then(() => this.queryDbForClosestParks())
       .then(console.log('response', this.state.destinationLonLat))
   }
 
-  handleClear(e) {
-    e.preventDefault()
-    this.setState({
-      searchResponseData: searchReponseStateDefault,
-      formData: ''
-    })
+  handleClear() {
+    if(this.formdata !== false) {
+      this.setState({
+        isSearchTriggered: false,
+        searchResponseData: searchReponseStateDefault,
+        formData: '',
+        bottomFormData: ''
+      })
+    } else {
+      console.log('formdata empty')
+    }
   }
 // I = -0.042499, 51.543832
 // II = -0.032414, 51.446282
@@ -127,7 +132,7 @@ class Map extends React.Component {
 
   dropDownData(data) {
     this.setState({
-      isSearchTriggered: !this.state.isSearchTriggered,
+      isSearchTriggered: false,
       bottomFormData: data.place_name,
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
@@ -186,51 +191,52 @@ class Map extends React.Component {
               <NavigationControl/>
             </div>
           </ReactMapGl>
-        <div className="bodyContainer">
-          <div className="field has-addons" >
-            <div className="control">
-              <a className="button is-radiusless">
-                <span className="icon">
-                  <FontAwesomeIcon icon="arrow-left" />
-                </span>
-              </a>
+          <div className="bodyContainer">
+            <div className="field has-addons" >
+              <div className="control">
+                <a className="button is-radiusless">
+                  <span className="icon">
+                    <FontAwesomeIcon icon="arrow-left" />
+                  </span>
+                </a>
+              </div>
+              <div className="control is-expanded">
+                <form onSubmit={this.handleSubmit}>
+                  <input
+                    className="input is-primary"
+                    type="text"
+                    placeholder='Add destination to plan route'
+                    onChange={this.handleChange}
+                    value={formData}
+                  />
+                </form>
+              </div>
+              <div className="control">
+                <a className="button is-radiusless" onClick={this.handleClear}>
+                  <span className="icon">
+                    <FontAwesomeIcon icon="times" />
+                  </span>
+                </a>
+              </div>
             </div>
-            <div className="control is-expanded">
-              <form onSubmit={this.handleSubmit}>
-                <input
-                  className="input is-primary"
-                  type="text"
-                  placeholder='Add destination to plan route'
-                  onChange={this.handleChange}
-                  value={formData}
-                />
-              </form>
+            <div className="dropdown">
+              <div>
+                {searchResponseData.features.map((element, index) =>
+                  <DropDownDisplay
+                    key={element.id}
+                    index={index}
+                    dropDownDisplayName={element.place_name}
+                    searchResponseData={searchResponseData}
+                    selectDestination={this.dropDownData}
+                    isSearchTriggered={isSearchTriggered}
+                  />
+                )}
+              </div>
             </div>
-            <div className="control">
-              <a className="button is-radiusless" onClick={this.handleClear}>
-                <span className="icon">
-                  <FontAwesomeIcon icon="times" />
-                </span>
-              </a>
-            </div>
-          </div>
-          <div className="dropdown">
-            <div>
-              {searchResponseData.features.map((element, index) =>
-                <DropDownDisplay
-                  key={element.id}
-                  index={index}
-                  dropDownDisplayName={element.place_name}
-                  searchResponseData={searchResponseData}
-                  selectDestination={this.dropDownData}
-                  isSearchTriggered={isSearchTriggered}
-                />
-              )}
-            </div>
-          </div>
           </div>
           {bottomFormData &&
               <div className="bottomFormContainer">
+              <div className="box is-radiusless">
                 <p className="button is-static is-fullwidth">{bottomFormData}
                 </p>
                 <button className="button is-info" >
@@ -239,6 +245,7 @@ class Map extends React.Component {
                   </span>
                   <span>Directions</span>
                 </button>
+              </div>
               </div>}
         </div>
       </div>
