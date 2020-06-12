@@ -61,6 +61,8 @@ class RouteThenBoundingBox(APIView):
             except (TypeError, ValueError):
                 size_in_hectares_float = 0.0
             parks_dict[park['id']] = {
+            'id':park['id'],
+            'name':park['name'],
             'lon_lat': lon_lat,
             'crowflys_distance_and_bearing': {'from_origin': crowflys_distance_and_bearing},
             'distance_from_bestfit_line': {'origin_to_destination': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_origin_to_destination, crowflys_distance_and_bearing)},
@@ -69,6 +71,7 @@ class RouteThenBoundingBox(APIView):
 
         largest_park_key = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
         largest_park_lon_lat = parks_within_perp_distance[largest_park_key]['lon_lat']
+        print('largest park name', parks_within_perp_distance[largest_park_key])
 
         best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_lon_lat, largest_park_lon_lat)
         best_fit_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, destination_lon_lat)
@@ -94,10 +97,11 @@ class RouteThenBoundingBox(APIView):
 
 
         routeGeometry = DirectionsCalculations.returnRouteGeometry(self, total_dict_lon_lat)
+        largestPark = parks_within_perp_distance[largest_park_key]
 
 
 
-        return Response(routeGeometry)
+        return Response([routeGeometry, largestPark])
 
 # parks_within_perp_distance_largest_park_to_destination_list + parks_within_perp_distance_origin_to_largest_park_list
 # YOU SHOULD PRIORITIZE PARKS WITH THE GREATEST AREA.

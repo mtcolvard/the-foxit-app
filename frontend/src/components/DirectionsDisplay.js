@@ -6,10 +6,15 @@ class DirectionsDisplay extends React.Component {
   constructor() {
     super()
     this.handleClick = this.handleClick.bind(this)
+    this.handleStartingPoint = this.handleStartingPoint.bind(this)
   }
 
   handleClick() {
     this.props.onArrowLeft()
+  }
+
+  handleStartingPoint() {
+    this.props.startingLocationMenu()
   }
 
   render() {
@@ -30,8 +35,9 @@ class DirectionsDisplay extends React.Component {
               <div className="control">
                 <input className="input"
                   type="text"
-                  placeholder="Add your location to plan route"
+                  placeholder="Choose starting point"
                   value={startingLocation}
+                  onClick={this.handleStartingPoint}
                 />
               </div>
               <div className="control">

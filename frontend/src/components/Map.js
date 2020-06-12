@@ -51,6 +51,7 @@ class Map extends React.Component {
       originLonLat: [-0.071132, 51.518891],
       destinationLonLat: [],
       routeGeometry: routeGeometryStateDefault,
+      routeLargestPark: {},
       parksWithinPerpDistance: [[-0.071132, 51.518891]],
       viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
         height: '100vh',
@@ -60,6 +61,7 @@ class Map extends React.Component {
       bottomDestinationData: '',
       destinationData: '',
       displayDirectionsDisplay: false,
+      displayStartingLocationDisplay: false,
       directions: '',
       tabOpen: false,
       searchResponseData: {
@@ -81,6 +83,10 @@ class Map extends React.Component {
     this.handleClear = this.handleClear.bind(this)
     this.handleDirectionsButtonClick = this.handleDirectionsButtonClick.bind(this)
     this.deselectDirectionsDisplay = this.deselectDirectionsDisplay.bind(this)
+    this.startingLocationDisplay = this.startingLocationDisplay.bind(this)
+    this.getCurrentLocation = this.getCurrentLocation.bind(this)
+    this.chooseCurrentLocationOnMap = this.chooseCurrentLocationOnMap.bind(this)
+    this.searchForCurrentLocation = this.searchForCurrentLocation.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
@@ -132,6 +138,22 @@ class Map extends React.Component {
     this.setState({ displayDirectionsDisplay: false })
   }
 
+  startingLocationDisplay() {
+    this.setState({ displayStartingLocationDisplay: true})
+  }
+// THIS NEEDS TO RECEIVE THE DATA FROM THE GEOLOCATOR AND IF CLICKED TRIGGER THE GEOLOCATOR
+  getCurrentLocation() {
+    this.setState({originLonLat: [-0.071132, 51.518891]})
+  }
+// THIS NEEDS TO BE ABLE FOR A PERSON TO DROP A PIN ON THIER ORIGIN FROM BOTH THE MOUSE AND FROM MOBILE
+  chooseCurrentLocationOnMap() {
+    this.setState({originLonLat: [-0.071132, 51.518891]})
+  }
+// THIS NEEDS TO BRING UP AN INPUT FIELD SO YOU CAN SERACH FOR WHERE YOU ARE
+  searchForCurrentLocation() {
+    this.setState({originLonLat: [-0.071132, 51.518891]})
+  }
+
   dropDownData(data) {
     this.setState({
       isSearchTriggered: false,
@@ -148,15 +170,17 @@ class Map extends React.Component {
   sendDestinationToBackend(data) {
     axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${data}/${this.state.ramblingTolerance}`)
       .then(res => this.setState({
-        parksWithinPerpDistance: res.data,
-        routeGeometry: res.data
+        parksWithinPerpDistance: res.data[0],
+        routeGeometry: res.data[0],
+        routeLargestPark: res.data[1]
       }))
       .then(console.log('parksWithinPerpDistance', this.state.parksWithinPerpDistance))
+      .then(console.log('routeLargestPark', this.state.routeLargestPark))
   }
 
 
   render () {
-    const {viewport, formData, bottomDestinationData, startingLocation, destinationData, displayDirectionsDisplay, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, formData, bottomDestinationData, startingLocation, destinationData, displayDirectionsDisplay, displayStartingLocationDisplay, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -196,7 +220,8 @@ class Map extends React.Component {
               <DirectionsDisplay
                 origin={startingLocation}
                 destination={destinationData.place_name}
-                onArrowLeft={this.deselectDirectionsDisplay}/>) :
+                onArrowLeft={this.deselectDirectionsDisplay}
+                startingLocationMenu={this.startingLocationDisplay}/>) :
               (
                 <div className="field has-addons" >
                   <div className="control">
@@ -226,6 +251,16 @@ class Map extends React.Component {
                   </div>
                 </div>
               )}
+            {displayStartingLocationDisplay &&
+              <div className="box is-radiusless">
+                <button className="button is-fullwidth" onClick={this.getCurrentLocation}>
+                Your location</button>
+                <button className="button is-fullwidth" onClick={this.chooseCurrentLocationOnMap}>
+                Choose on map</button>
+                <button className="button is-fullwidth" onClick={this.searchForCurrentLocation}>
+                Search on Map</button>
+              </div>
+            }
             <div className="dropdown">
               <div>
                 {searchResponseData.features.map((element, index) =>
