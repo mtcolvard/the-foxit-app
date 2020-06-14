@@ -79,7 +79,8 @@ class Map extends React.Component {
       displayOriginSearchBar: false,
       displayOriginSearchDropdown: false,
       displayDestinationSearchBar: true,
-      displayBottomDestinationData: false
+      displayBottomDestinationData: false,
+      originDrop: true
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
@@ -240,7 +241,7 @@ class Map extends React.Component {
 
 
   render () {
-    const {viewport, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, originDrop, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -326,7 +327,7 @@ class Map extends React.Component {
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
-                    selectDestination={this.destinationDropDownData}
+                    selectDestination={originDrop ? this.destinationDropDownData :this.originDropDownData}
                     isSearchTriggered={isSearchTriggered}
                   />
                 )}
