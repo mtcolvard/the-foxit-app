@@ -5,26 +5,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 class DirectionsDisplay extends React.Component {
   constructor() {
     super()
-    this.handleClick = this.handleClick.bind(this)
-    this.handleStartingPoint = this.handleStartingPoint.bind(this)
+    this.handleArrowLeftClick = this.handleArrowLeftClick.bind(this)
+    this.triggerOriginSearchMenu = this.triggerOriginSearchMenu.bind(this)
   }
 
-  handleClick() {
+  handleArrowLeftClick() {
     this.props.onArrowLeft()
   }
 
-  handleStartingPoint() {
-    this.props.startingLocationMenu()
+  triggerOriginSearchMenu() {
+    this.props.onTriggerOriginSearchMenu()
   }
 
   render() {
-    const startingLocation = this.props.startingLocation
     const destination = this.props.destination
+    const origin = this.props.origin
     return (
       <div className="box">
         <div className="columns is-mobile">
           <div className="column">
-            <a className="button is-radiusless" onClick={this.handleClick}>
+            <a className="button is-radiusless" onClick={this.handleArrowLeftClick}>
               <span className="icon">
                 <FontAwesomeIcon icon="arrow-left" />
               </span>
@@ -36,8 +36,8 @@ class DirectionsDisplay extends React.Component {
                 <input className="input"
                   type="text"
                   placeholder="Choose starting point"
-                  value={startingLocation}
-                  onClick={this.handleStartingPoint}
+                  value={origin}
+                  onClick={this.triggerOriginSearchMenu}
                 />
               </div>
               <div className="control">

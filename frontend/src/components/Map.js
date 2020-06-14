@@ -6,6 +6,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
 import DropDownDisplay from './DropDownDisplay'
 import DirectionsDisplay from './DirectionsDisplay'
+import SearchBar from './SearchBar'
 
 // import Marker from './Marker'
 import Pins from './Pins'
@@ -47,7 +48,8 @@ class Map extends React.Component {
 
     this.state = {
       ramblingTolerance: 500,
-      isSearchTriggered: false,
+      isDestinationSearchTriggered: false,
+      isOriginSearchTriggered: false,
       originLonLat: [-0.071132, 51.518891],
       destinationLonLat: [],
       routeGeometry: routeGeometryStateDefault,
@@ -57,11 +59,11 @@ class Map extends React.Component {
         height: '100vh',
         width: '100vw'},
       formData: '',
-      startingLocation: '',
+      originformData: '',
+      destinationFormData: '',
       bottomDestinationData: '',
       destinationData: '',
-      displayDirectionsDisplay: false,
-      displayStartingLocationDisplay: false,
+      originData: '',
       directions: '',
       tabOpen: false,
       searchResponseData: {
@@ -72,21 +74,30 @@ class Map extends React.Component {
         ],
         attribution: null
       },
-      closestWaypoints: [null]
+      closestWaypoints: [null],
+      displayDirectionsDisplay: false,
+      displayOriginSearchBar: false,
+      displayOriginSearchDropdown: false,
+      displayDestinationSearchBar: true,
+      displayBottomDestinationData: false
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.dropDownData = this.dropDownData.bind(this)
+    this.handleDestinationFormChange = this.handleDestinationFormChange.bind(this)
+    this.handleOriginFormChange = this.handleOriginFormChange.bind(this)
+    this.handleDestinationSubmit = this.handleDestinationSubmit.bind(this)
+    this.handleOriginSubmit = this.handleOriginSubmit.bind(this)
+    this.destinationDropDownData = this.destinationDropDownData.bind(this)
+    this.originDropDownData = this.originDropDownData.bind(this)
     this.sendDestinationToBackend = this.sendDestinationToBackend.bind(this)
     // this.handlefakeclick = this.handlefakeclick.bind(this)
     this.handleClear = this.handleClear.bind(this)
     this.handleDirectionsButtonClick = this.handleDirectionsButtonClick.bind(this)
+    this.findMyLocation = this.findMyLocation.bind(this)
+    this.chooseLocationOnMap = this.chooseLocationOnMap.bind(this)
+
     this.deselectDirectionsDisplay = this.deselectDirectionsDisplay.bind(this)
-    this.startingLocationDisplay = this.startingLocationDisplay.bind(this)
-    this.getCurrentLocation = this.getCurrentLocation.bind(this)
-    this.chooseCurrentLocationOnMap = this.chooseCurrentLocationOnMap.bind(this)
-    this.searchForCurrentLocation = this.searchForCurrentLocation.bind(this)
+    this.originSearchMenu = this.originSearchMenu.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
 
@@ -102,19 +113,42 @@ class Map extends React.Component {
   }
 
   handleChange(e) {
-    this.setState({ formData: e.target.value, error: '' })
+    const target = e.target
+    const value = target.value
+    const name = target.name
+    this.setState({ [name]: value, error: '' })
     console.log('handleChange', this.state.formData)
   }
 
-  handleSubmit(e) {
-    e.preventDefault()
-    axios.get(`api/mapbox/geocoder/${this.state.formData}`)
+
+  handleDestinationFormChange(e) {
+    this.setState({ destinationFormData: e.target.value, error: '' })
+    console.log('destinationFormChange', this.state.destinationFormData)
+  }
+
+  handleOriginFormChange(e) {
+    this.setState({ originFormData: e.target.value, error: '' })
+    console.log('originFormChange', this.state.originFormData)
+  }
+
+  handleDestinationSubmit() {
+    axios.get(`api/mapbox/geocoder/${this.state.destinationFormData}`)
       .then(res => this.setState({
-        isSearchTriggered: true,
+        isDestinationSearchTriggered: true,
         searchResponseData: res.data
       }))
       // .then(() => this.queryDbForClosestParks())
-      .then(console.log('response', this.state.destinationLonLat))
+      .then(console.log('destination submit response', this.state.destinationLonLat))
+  }
+
+  handleOriginSubmit() {
+    axios.get(`api/mapbox/geocoder/${this.state.originFormData}`)
+      .then(res => this.setState({
+        isOriginSearchTriggered: true,
+        searchResponseData: res.data
+      }))
+      // .then(() => this.queryDbForClosestParks())
+      .then(console.log('origin submit response', this.state.destinationLonLat))
   }
 
   handleClear() {
@@ -130,45 +164,36 @@ class Map extends React.Component {
     }
   }
 
-  handleDirectionsButtonClick() {
-    this.setState({ displayDirectionsDisplay: true })
-  }
 
-  deselectDirectionsDisplay() {
-    this.setState({ displayDirectionsDisplay: false })
-  }
-
-  startingLocationDisplay() {
-    this.setState({ displayStartingLocationDisplay: true})
-  }
-// THIS NEEDS TO RECEIVE THE DATA FROM THE GEOLOCATOR AND IF CLICKED TRIGGER THE GEOLOCATOR
-  getCurrentLocation() {
-    this.setState({originLonLat: [-0.071132, 51.518891]})
-  }
-// THIS NEEDS TO BE ABLE FOR A PERSON TO DROP A PIN ON THIER ORIGIN FROM BOTH THE MOUSE AND FROM MOBILE
-  chooseCurrentLocationOnMap() {
-    this.setState({originLonLat: [-0.071132, 51.518891]})
-  }
-// THIS NEEDS TO BRING UP AN INPUT FIELD SO YOU CAN SERACH FOR WHERE YOU ARE
-  searchForCurrentLocation() {
-    this.setState({originLonLat: [-0.071132, 51.518891]})
-  }
-
-  dropDownData(data) {
+  destinationDropDownData(data) {
     this.setState({
-      isSearchTriggered: false,
+      isDestinationSearchTriggered: false,
+      displayBottomDestinationData: true,
       destinationData: data,
+      destinationLonLat: data.center,
       bottomDestinationData: data.place_name,
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
-    // this.getWalkingRoute(data.center)
-    this.sendDestinationToBackend(data.center)
-    console.log('dropDownData data.center', data.center)
+    // this.sendDestinationToBackend(data.center)
+    console.log('destinationDropDownData data.center', data.center)
   }
 
-  sendDestinationToBackend(data) {
-    axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${data}/${this.state.ramblingTolerance}`)
+// DOES THIS NEED PROMISES TO BE SURE STATE IS SET BEFORE sendDestinationToBackend() IS TRIGGERED?
+  originDropDownData(data) {
+    this.setState({
+      isOriginSearchTriggered: false,
+      originData: data,
+      originLonLat: data.center,
+      searchResponseData: searchReponseStateDefault,
+      routeGeometry: routeGeometryStateDefault
+    })
+    this.sendDestinationToBackend()
+    console.log('originDropDownData data.center', data.center)
+  }
+
+  sendDestinationToBackend() {
+    axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${this.state.destinationLonLat}/${this.state.ramblingTolerance}`)
       .then(res => this.setState({
         parksWithinPerpDistance: res.data[0],
         routeGeometry: res.data[0],
@@ -178,9 +203,37 @@ class Map extends React.Component {
       .then(console.log('routeLargestPark', this.state.routeLargestPark))
   }
 
+  handleDirectionsButtonClick() {
+    this.setState({
+      displayDirectionsDisplay: true,
+      displayDestinationSearchBar: false,
+      displayBottomDestinationData: false
+    })
+  }
+
+  deselectDirectionsDisplay() {
+    this.setState({ displayDirectionsDisplay: false })
+  }
+
+  originSearchMenu() {
+    this.setState({
+      displayDirectionsDisplay: false,
+      displayOriginSearchBar: true,
+      displayOriginSearchDropdown: true})
+  }
+// THIS NEEDS TO RECEIVE THE DATA FROM THE GEOLOCATOR AND IF CLICKED TRIGGER THE GEOLOCATOR
+  findMyLocation() {
+    this.setState({originLonLat: [-0.071132, 51.518891]})
+  }
+// THIS NEEDS TO BE ABLE FOR A PERSON TO DROP A PIN ON THIER ORIGIN FROM BOTH THE MOUSE AND FROM MOBILE
+  chooseLocationOnMap() {
+    this.setState({originLonLat: [-0.071132, 51.518891]})
+  }
+
+
 
   render () {
-    const {viewport, formData, bottomDestinationData, startingLocation, destinationData, displayDirectionsDisplay, displayStartingLocationDisplay, searchResponseData, isSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, formData, bottomDestinationData, originFormData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -216,67 +269,76 @@ class Map extends React.Component {
             </div>
           </ReactMapGl>
           <div className="bodyContainer">
-            {displayDirectionsDisplay ? (
+            {displayDirectionsDisplay &&
               <DirectionsDisplay
-                origin={startingLocation}
+                origin={originFormData}
                 destination={destinationData.place_name}
                 onArrowLeft={this.deselectDirectionsDisplay}
-                startingLocationMenu={this.startingLocationDisplay}/>) :
-              (
-                <div className="field has-addons" >
-                  <div className="control">
-                    <a className="button is-radiusless">
-                      <span className="icon">
-                        <FontAwesomeIcon icon="arrow-left" />
-                      </span>
-                    </a>
-                  </div>
-                  <div className="control is-expanded">
-                    <form onSubmit={this.handleSubmit}>
-                      <input
-                        className="input is-primary"
-                        type="text"
-                        placeholder='Add destination to plan route'
-                        onChange={this.handleChange}
-                        value={formData}
-                      />
-                    </form>
-                  </div>
-                  <div className="control">
-                    <a className="button is-radiusless" onClick={this.handleClear}>
-                      <span className="icon">
-                        <FontAwesomeIcon icon="times" />
-                      </span>
-                    </a>
-                  </div>
-                </div>
-              )}
-            {displayStartingLocationDisplay &&
-              <div className="box is-radiusless">
-                <button className="button is-fullwidth" onClick={this.getCurrentLocation}>
-                Your location</button>
-                <button className="button is-fullwidth" onClick={this.chooseCurrentLocationOnMap}>
-                Choose on map</button>
-                <button className="button is-fullwidth" onClick={this.searchForCurrentLocation}>
-                Search on Map</button>
+                onTriggerOriginSearchMenu={this.originSearchMenu}/>
+            }
+            {displayOriginSearchBar &&
+              <SearchBar
+                onArrowLeft={this.originSearchBarArrowLeft}
+                onTimes={this.originSearchBarHandleClear}
+                onHandleChange={this.handleOriginFormChange}
+                onHandleSubmit={this.handleOriginSubmit}
+                onFieldClick={this.hideOriginSearchDropdown}
+                searchformData={this.originFormData}
+                placeholder='Search'/>
+            }
+            {displayDestinationSearchBar &&
+              <SearchBar
+                onArrowLeft={this.destinationSearchBarArrowLeft}
+                onTimes={this.destinationSearchBarHandleClear}
+                onHandleChange={this.handleDestinationFormChange}
+                onHandleSubmit={this.handleDestinationSubmit}
+                searchformData={this.destinationFormData}
+                placeholder='Add destination to plan route'/>
+            }
+            {displayOriginSearchDropdown &&
+              <div className="box is-radiusless is-marginless">
+                <button className="button is-fullwidth has-text-left" onClick={this.findMyLocation}>
+                  <span className="icon">
+                    <FontAwesomeIcon icon="location-arrow"/></span>
+                  <span>Find my location</span>
+                </button>
+                <button className="button is-fullwidth has-text-left" onClick={this.chooseLocationOnMap}>
+                  <span className="icon">
+                    <FontAwesomeIcon icon="map-marker-alt"/></span>
+                  <span>Choose on map</span>
+                </button>
               </div>
             }
             <div className="dropdown">
               <div>
-                {searchResponseData.features.map((element, index) =>
+                {isDestinationSearchTriggered && searchResponseData.features.map((element, index) =>
                   <DropDownDisplay
                     key={element.id}
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
-                    selectDestination={this.dropDownData}
-                    isSearchTriggered={isSearchTriggered}
+                    selectDestination={this.destinationDropDownData}
+                    isSearchTriggered={isDestinationSearchTriggered}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="dropdown">
+              <div>
+                {isOriginSearchTriggered && searchResponseData.features.map((element, index) =>
+                  <DropDownDisplay
+                    key={element.id}
+                    index={index}
+                    dropDownDisplayName={element.place_name}
+                    searchResponseData={searchResponseData}
+                    selectDestination={this.destinationDropDownData}
+                    isSearchTriggered={isOriginSearchTriggered}
                   />
                 )}
               </div>
             </div>
           </div>
-          {bottomDestinationData &&
+          {displayBottomDestinationData &&
               <div className="bottomFormContainer">
                 <div className="box is-radiusless">
                   <p className="button is-static is-fullwidth">{bottomDestinationData}
@@ -291,12 +353,13 @@ class Map extends React.Component {
               </div>}
         </div>
       </div>
-
     )
   }
 }
 
 export default Map
+
+
 
 // {displayDirectionsDisplay &&
 //   destinationData ? (
@@ -314,10 +377,10 @@ export default Map
 // III = -0.115405, 51.495166
 // IV = -0.104109, 51.531267
 // N = -0.097235, 51.559927
-  // handlefakeclick(e) {
-  //   e.preventDefault()
-  //   this.sendDestinationToBackend([-0.097235, 51.559927])
-  // }
+// handlefakeclick(e) {
+//   e.preventDefault()
+//   this.sendDestinationToBackend([-0.097235, 51.559927])
+// }
 
 // <div className="container" id="bottomMenu">
 //   <button className="button" onClick={this.handlefakeclick}>Search
@@ -325,24 +388,6 @@ export default Map
 //   <button className="button">
 //   </button>
 // </div>
-
-
-
-// <div className="section">
-//   <div className="bottomForm">
-//   <div className="control is-expanded">
-//     {bottomDestinationData &&
-//       <form>
-//         <input className="input is-primary"
-//           type="text"
-//           value={bottomDestinationData}
-//         />
-//       </form>}
-//   </div>
-//   </div>
-// </div>
-
-
 
 // this goes just below forms
 // <div>
