@@ -127,6 +127,11 @@ class Map extends React.Component {
         searchResponseData: res.data
       }))
       .then(console.log('destination submit response', this.state[name]))
+      // .then(() => {
+      //   if (this.state.originData && this.state.destinationData) {
+      //     this.sendDestinationToBackend()
+      //   }
+      // })
   }
 
   handleClear(name) {
@@ -181,8 +186,8 @@ class Map extends React.Component {
     console.log('originDropDownData data.center', data.center)
   }
 
-  sendDestinationToBackend(data) {
-    axios.get(`api/routethenboundingbox/${data}/${this.state.destinationLonLat}/${this.state.ramblingTolerance}`)
+  sendDestinationToBackend() {
+    axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${this.state.destinationLonLat}/${this.state.ramblingTolerance}`)
       .then(res => this.setState({
         parksWithinPerpDistance: res.data[0],
         routeGeometry: res.data[0],
@@ -227,8 +232,6 @@ class Map extends React.Component {
   chooseLocationOnMap() {
     this.setState({originLonLat: [-0.071132, 51.518891]})
   }
-
-
 
   render () {
     const {viewport, originDrop, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
@@ -280,7 +283,7 @@ class Map extends React.Component {
                 onArrowLeft={this.originSearchBarArrowLeft}
                 onTimes={this.handleClear}
                 onHandleChange={this.handleChange}
-                onHandleSubmit={this.handleOriginSubmit}
+                onHandleSubmit={this.handleSubmit}
                 searchformData={originFormData}
                 placeholder='Search'
                 name='originFormData'/>
