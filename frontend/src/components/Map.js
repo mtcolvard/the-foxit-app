@@ -48,8 +48,8 @@ class Map extends React.Component {
 
     this.state = {
       ramblingTolerance: 500,
-      isDestinationSearchTriggered: false,
-      isOriginSearchTriggered: false,
+      isdestinationFormDataSearchTriggered: false,
+      isoriginFormDataSearchTriggered: false,
       originLonLat: [-0.071132, 51.518891],
       destinationLonLat: [],
       routeGeometry: routeGeometryStateDefault,
@@ -84,8 +84,7 @@ class Map extends React.Component {
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
-    this.handleDestinationSubmit = this.handleDestinationSubmit.bind(this)
-    this.handleOriginSubmit = this.handleOriginSubmit.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
     this.destinationDropDownData = this.destinationDropDownData.bind(this)
     this.originDropDownData = this.originDropDownData.bind(this)
     this.sendDestinationToBackend = this.sendDestinationToBackend.bind(this)
@@ -119,24 +118,15 @@ class Map extends React.Component {
     console.log('handleChange', this.state[name])
   }
 
-  handleDestinationSubmit(name) {
+  handleSubmit(name) {
+    const searchName = `is${name}SearchTriggered`
     axios.get(`api/mapbox/geocoder/${this.state[name]}`)
       .then(res => this.setState({
         isSearchTriggered: true,
-        isDestinationSearchTriggered: true,
+        [searchName]: true,
         searchResponseData: res.data
       }))
       .then(console.log('destination submit response', this.state[name]))
-  }
-
-  handleOriginSubmit(name) {
-    axios.get(`api/mapbox/geocoder/${this.state[name]}`)
-      .then(res => this.setState({
-        isSearchTriggered: true,
-        isOriginSearchTriggered: true,
-        searchResponseData: res.data
-      }))
-      .then(console.log('origin submit response', this.state.originLonLat))
   }
 
   handleClear(name) {
@@ -163,7 +153,7 @@ class Map extends React.Component {
 
   destinationDropDownData(data) {
     this.setState({
-      isDestinationSearchTriggered: false,
+      isdestinationFormDataSearchTriggered: false,
       displayBottomDestinationData: true,
       destinationData: data,
       destinationLonLat: data.center,
@@ -178,7 +168,7 @@ class Map extends React.Component {
 // DOES THIS NEED PROMISES TO BE SURE STATE IS SET BEFORE sendDestinationToBackend() IS TRIGGERED?
   originDropDownData(data) {
     this.setState({
-      isOriginSearchTriggered: false,
+      isoriginFormDataSearchTriggered: false,
       displayOriginSearchBar: false,
       displayOriginSearchDropdown: false,
       displayDirectionsDisplay: true,
@@ -241,7 +231,7 @@ class Map extends React.Component {
 
 
   render () {
-    const {viewport, originDrop, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, originDrop, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -300,7 +290,7 @@ class Map extends React.Component {
                 onArrowLeft={this.destinationSearchBarArrowLeft}
                 onTimes={this.handleClear}
                 onHandleChange={this.handleChange}
-                onHandleSubmit={this.handleDestinationSubmit}
+                onHandleSubmit={this.handleSubmit}
                 searchformData={destinationFormData}
                 placeholder='Add destination to plan route'
                 name='destinationFormData'/>
@@ -321,13 +311,13 @@ class Map extends React.Component {
             }
             <div className="dropdown">
               <div>
-                {isSearchTriggered && isDestinationSearchTriggered && searchResponseData.features.map((element, index) =>
+                {isSearchTriggered && isdestinationFormDataSearchTriggered && searchResponseData.features.map((element, index) =>
                   <DropDownDisplay
                     key={element.id}
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
-                    selectDestination={originDrop ? this.destinationDropDownData :this.originDropDownData}
+                    selectDestination={isdestinationFormDataSearchTriggered ? this.destinationDropDownData :this.originDropDownData}
                     isSearchTriggered={isSearchTriggered}
                   />
                 )}
@@ -335,7 +325,7 @@ class Map extends React.Component {
             </div>
             <div className="dropdown">
               <div>
-                {isSearchTriggered && isOriginSearchTriggered && searchResponseData.features.map((element, index) =>
+                {isSearchTriggered && isoriginFormDataSearchTriggered && searchResponseData.features.map((element, index) =>
                   <DropDownDisplay
                     key={element.id}
                     index={index}

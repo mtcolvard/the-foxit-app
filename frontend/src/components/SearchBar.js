@@ -17,7 +17,6 @@ class SearchBar extends React.Component {
   handleTimesClick() {
     this.props.onTimes(this.props.name)
   }
-
   handleChange(e) {
     this.props.onHandleChange(e)
   }
