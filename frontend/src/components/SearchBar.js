@@ -18,16 +18,12 @@ class SearchBar extends React.Component {
     this.props.onTimes()
   }
 
-  handleFieldClick(){
-    this.props.onFieldClick()
-  }
-
   handleChange(e) {
     this.props.onHandleChange(e)
   }
   handleSubmit(e) {
     e.preventDefault()
-    this.props.onHandleSubmit()
+    this.props.onHandleSubmit(e)
   }
 
   render() {
@@ -46,9 +42,9 @@ class SearchBar extends React.Component {
               className="input is-primary"
               type="text"
               placeholder={this.props.placeholder}
-              onClick={this.handleFieldClick}
               onChange={this.handleChange}
               value={this.props.searchformData}
+              name={this.props.name}
             />
           </form>
         </div>

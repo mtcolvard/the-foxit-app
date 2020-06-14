@@ -59,7 +59,7 @@ class Map extends React.Component {
         height: '100vh',
         width: '100vw'},
       formData: '',
-      originformData: '',
+      originFormData: '',
       destinationFormData: '',
       bottomDestinationData: '',
       destinationData: '',
@@ -83,8 +83,6 @@ class Map extends React.Component {
     }
     this.handleMouseDown = this.handleMouseDown.bind(this)
     this.handleChange = this.handleChange.bind(this)
-    this.handleDestinationFormChange = this.handleDestinationFormChange.bind(this)
-    this.handleOriginFormChange = this.handleOriginFormChange.bind(this)
     this.handleDestinationSubmit = this.handleDestinationSubmit.bind(this)
     this.handleOriginSubmit = this.handleOriginSubmit.bind(this)
     this.destinationDropDownData = this.destinationDropDownData.bind(this)
@@ -117,18 +115,7 @@ class Map extends React.Component {
     const value = target.value
     const name = target.name
     this.setState({ [name]: value, error: '' })
-    console.log('handleChange', this.state.formData)
-  }
-
-
-  handleDestinationFormChange(e) {
-    this.setState({ destinationFormData: e.target.value, error: '' })
-    console.log('destinationFormChange', this.state.destinationFormData)
-  }
-
-  handleOriginFormChange(e) {
-    this.setState({ originFormData: e.target.value, error: '' })
-    console.log('originFormChange', this.state.originFormData)
+    console.log('handleChange', this.state[name])
   }
 
   handleDestinationSubmit() {
@@ -137,7 +124,6 @@ class Map extends React.Component {
         isDestinationSearchTriggered: true,
         searchResponseData: res.data
       }))
-      // .then(() => this.queryDbForClosestParks())
       .then(console.log('destination submit response', this.state.destinationLonLat))
   }
 
@@ -147,8 +133,7 @@ class Map extends React.Component {
         isOriginSearchTriggered: true,
         searchResponseData: res.data
       }))
-      // .then(() => this.queryDbForClosestParks())
-      .then(console.log('origin submit response', this.state.destinationLonLat))
+      .then(console.log('origin submit response', this.state.originLonLat))
   }
 
   handleClear() {
@@ -183,17 +168,20 @@ class Map extends React.Component {
   originDropDownData(data) {
     this.setState({
       isOriginSearchTriggered: false,
+      displayOriginSearchBar: false,
+      displayOriginSearchDropdown: false,
+      displayDirectionsDisplay: true,
       originData: data,
       originLonLat: data.center,
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
-    this.sendDestinationToBackend()
+    this.sendDestinationToBackend(data.center)
     console.log('originDropDownData data.center', data.center)
   }
 
-  sendDestinationToBackend() {
-    axios.get(`api/routethenboundingbox/${this.state.originLonLat}/${this.state.destinationLonLat}/${this.state.ramblingTolerance}`)
+  sendDestinationToBackend(data) {
+    axios.get(`api/routethenboundingbox/${data}/${this.state.destinationLonLat}/${this.state.ramblingTolerance}`)
       .then(res => this.setState({
         parksWithinPerpDistance: res.data[0],
         routeGeometry: res.data[0],
@@ -218,8 +206,17 @@ class Map extends React.Component {
   originSearchMenu() {
     this.setState({
       displayDirectionsDisplay: false,
+      displayDestinationSearchBar: false,
       displayOriginSearchBar: true,
       displayOriginSearchDropdown: true})
+  }
+
+  destinationSearchMenu() {
+    this.setState({
+      displayDirectionsDisplay: false,
+      displayDestinationSearchBar: true,
+      displayOriginSearchBar: false,
+      displayOriginSearchDropdown: false})
   }
 // THIS NEEDS TO RECEIVE THE DATA FROM THE GEOLOCATOR AND IF CLICKED TRIGGER THE GEOLOCATOR
   findMyLocation() {
@@ -233,7 +230,7 @@ class Map extends React.Component {
 
 
   render () {
-    const {viewport, formData, bottomDestinationData, originFormData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -271,29 +268,31 @@ class Map extends React.Component {
           <div className="bodyContainer">
             {displayDirectionsDisplay &&
               <DirectionsDisplay
-                origin={originFormData}
+                origin={originData.place_name}
                 destination={destinationData.place_name}
                 onArrowLeft={this.deselectDirectionsDisplay}
-                onTriggerOriginSearchMenu={this.originSearchMenu}/>
+                onTriggerOriginSearchMenu={this.originSearchMenu}
+                onTriggerDestinationSearchMenu={this.destinationSearchMenu}/>
             }
             {displayOriginSearchBar &&
               <SearchBar
                 onArrowLeft={this.originSearchBarArrowLeft}
                 onTimes={this.originSearchBarHandleClear}
-                onHandleChange={this.handleOriginFormChange}
+                onHandleChange={this.handleChange}
                 onHandleSubmit={this.handleOriginSubmit}
-                onFieldClick={this.hideOriginSearchDropdown}
-                searchformData={this.originFormData}
-                placeholder='Search'/>
+                searchformData={originFormData}
+                placeholder='Search'
+                name='originFormData'/>
             }
             {displayDestinationSearchBar &&
               <SearchBar
                 onArrowLeft={this.destinationSearchBarArrowLeft}
                 onTimes={this.destinationSearchBarHandleClear}
-                onHandleChange={this.handleDestinationFormChange}
+                onHandleChange={this.handleChange}
                 onHandleSubmit={this.handleDestinationSubmit}
-                searchformData={this.destinationFormData}
-                placeholder='Add destination to plan route'/>
+                searchformData={destinationFormData}
+                placeholder='Add destination to plan route'
+                name='destinationFormData'/>
             }
             {displayOriginSearchDropdown &&
               <div className="box is-radiusless is-marginless">
@@ -331,7 +330,7 @@ class Map extends React.Component {
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
-                    selectDestination={this.destinationDropDownData}
+                    selectDestination={this.originDropDownData}
                     isSearchTriggered={isOriginSearchTriggered}
                   />
                 )}

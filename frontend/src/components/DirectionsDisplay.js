@@ -7,6 +7,7 @@ class DirectionsDisplay extends React.Component {
     super()
     this.handleArrowLeftClick = this.handleArrowLeftClick.bind(this)
     this.triggerOriginSearchMenu = this.triggerOriginSearchMenu.bind(this)
+    this.triggerDestinationSearchMenu = this.triggerDestinationSearchMenu.bind(this)
   }
 
   handleArrowLeftClick() {
@@ -15,6 +16,10 @@ class DirectionsDisplay extends React.Component {
 
   triggerOriginSearchMenu() {
     this.props.onTriggerOriginSearchMenu()
+  }
+
+  triggerDestinationSearchMenu() {
+    this.props.onTriggerDestinationSearchMenu()
   }
 
   render() {
@@ -33,7 +38,9 @@ class DirectionsDisplay extends React.Component {
           <div className="column is-11">
             <div className="field">
               <div className="control">
-                <input className="input"
+                <input
+                  readOnly
+                  className="input"
                   type="text"
                   placeholder="Choose starting point"
                   value={origin}
@@ -41,10 +48,13 @@ class DirectionsDisplay extends React.Component {
                 />
               </div>
               <div className="control">
-                <input readOnly className="input"
+                <input
+                  readOnly
+                  className="input"
                   type="text"
                   placeholder="Choose destination"
                   value={destination}
+                  onClick={this.triggerDestinationSearchMenu}
                 />
               </div>
             </div>
