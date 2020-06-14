@@ -118,36 +118,46 @@ class Map extends React.Component {
     console.log('handleChange', this.state[name])
   }
 
-  handleDestinationSubmit() {
-    axios.get(`api/mapbox/geocoder/${this.state.destinationFormData}`)
+  handleDestinationSubmit(name) {
+    axios.get(`api/mapbox/geocoder/${this.state[name]}`)
       .then(res => this.setState({
+        isSearchTriggered: true,
         isDestinationSearchTriggered: true,
         searchResponseData: res.data
       }))
-      .then(console.log('destination submit response', this.state.destinationLonLat))
+      .then(console.log('destination submit response', this.state[name]))
   }
 
-  handleOriginSubmit() {
-    axios.get(`api/mapbox/geocoder/${this.state.originFormData}`)
+  handleOriginSubmit(name) {
+    axios.get(`api/mapbox/geocoder/${this.state[name]}`)
       .then(res => this.setState({
+        isSearchTriggered: true,
         isOriginSearchTriggered: true,
         searchResponseData: res.data
       }))
       .then(console.log('origin submit response', this.state.originLonLat))
   }
 
-  handleClear() {
-    if(this.formdata !== false) {
-      this.setState({
-        isSearchTriggered: false,
-        searchResponseData: searchReponseStateDefault,
-        formData: '',
-        bottomDestinationData: ''
-      })
-    } else {
-      console.log('formdata empty')
-    }
+  handleClear(name) {
+    this.setState({
+      [name]: '',
+      searchResponseData: '',
+      isSearchTriggered: false,
+      displayBottomDestinationData: false
+    })
   }
+  // handleClear() {
+  //   if(this.formdata !== false) {
+  //     this.setState({
+  //       isSearchTriggered: false,
+  //       searchResponseData: searchReponseStateDefault,
+  //       formData: '',
+  //       bottomDestinationData: ''
+  //     })
+  //   } else {
+  //     console.log('formdata empty')
+  //   }
+  // }
 
 
   destinationDropDownData(data) {
@@ -230,7 +240,7 @@ class Map extends React.Component {
 
 
   render () {
-    const {viewport, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isDestinationSearchTriggered, isOriginSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -277,7 +287,7 @@ class Map extends React.Component {
             {displayOriginSearchBar &&
               <SearchBar
                 onArrowLeft={this.originSearchBarArrowLeft}
-                onTimes={this.originSearchBarHandleClear}
+                onTimes={this.handleClear}
                 onHandleChange={this.handleChange}
                 onHandleSubmit={this.handleOriginSubmit}
                 searchformData={originFormData}
@@ -287,7 +297,7 @@ class Map extends React.Component {
             {displayDestinationSearchBar &&
               <SearchBar
                 onArrowLeft={this.destinationSearchBarArrowLeft}
-                onTimes={this.destinationSearchBarHandleClear}
+                onTimes={this.handleClear}
                 onHandleChange={this.handleChange}
                 onHandleSubmit={this.handleDestinationSubmit}
                 searchformData={destinationFormData}
@@ -310,28 +320,28 @@ class Map extends React.Component {
             }
             <div className="dropdown">
               <div>
-                {isDestinationSearchTriggered && searchResponseData.features.map((element, index) =>
+                {isSearchTriggered && isDestinationSearchTriggered && searchResponseData.features.map((element, index) =>
                   <DropDownDisplay
                     key={element.id}
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
                     selectDestination={this.destinationDropDownData}
-                    isSearchTriggered={isDestinationSearchTriggered}
+                    isSearchTriggered={isSearchTriggered}
                   />
                 )}
               </div>
             </div>
             <div className="dropdown">
               <div>
-                {isOriginSearchTriggered && searchResponseData.features.map((element, index) =>
+                {isSearchTriggered && isOriginSearchTriggered && searchResponseData.features.map((element, index) =>
                   <DropDownDisplay
                     key={element.id}
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
                     selectDestination={this.originDropDownData}
-                    isSearchTriggered={isOriginSearchTriggered}
+                    isSearchTriggered={isSearchTriggered}
                   />
                 )}
               </div>

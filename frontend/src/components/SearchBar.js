@@ -15,7 +15,7 @@ class SearchBar extends React.Component {
     this.props.onArrowLeft()
   }
   handleTimesClick() {
-    this.props.onTimes()
+    this.props.onTimes(this.props.name)
   }
 
   handleChange(e) {
@@ -23,7 +23,7 @@ class SearchBar extends React.Component {
   }
   handleSubmit(e) {
     e.preventDefault()
-    this.props.onHandleSubmit(e)
+    this.props.onHandleSubmit(this.props.name)
   }
 
   render() {
