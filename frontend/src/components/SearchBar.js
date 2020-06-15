@@ -38,7 +38,8 @@ class SearchBar extends React.Component {
         <div className="control is-expanded">
           <form onSubmit={this.handleSubmit}>
             <input
-              className="input is-primary"
+              className="input is-focused"
+              autoFocus
               type="text"
               placeholder={this.props.placeholder}
               onChange={this.handleChange}

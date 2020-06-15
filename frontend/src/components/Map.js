@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useMemo} from 'react'
 import ReactMapGl, {MapGl, BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import axios from 'axios'
@@ -7,6 +7,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import DropDownDisplay from './DropDownDisplay'
 import DirectionsDisplay from './DirectionsDisplay'
 import SearchBar from './SearchBar'
+import DecideToQueryMapboxDirections from './DecideToQueryMapboxDirections'
 
 // import Marker from './Marker'
 import Pins from './Pins'
@@ -42,6 +43,8 @@ const routeGeometryStateDefault = {
     'coordinates': lngLat}}
 
 
+
+
 class Map extends React.Component {
   constructor() {
     super()
@@ -55,9 +58,10 @@ class Map extends React.Component {
       routeGeometry: routeGeometryStateDefault,
       routeLargestPark: {},
       parksWithinPerpDistance: [[-0.071132, 51.518891]],
-      viewport: {longitude: lngLat[0], latitude: lngLat[1], zoom: 12,
-        height: '100vh',
-        width: '100vw'},
+      viewport: {
+        longitude: lngLat[0],
+        latitude: lngLat[1],
+        zoom: 12},
       formData: '',
       originFormData: '',
       destinationFormData: '',
@@ -124,7 +128,7 @@ class Map extends React.Component {
       .then(res => this.setState({
         isSearchTriggered: true,
         [searchName]: true,
-        searchResponseData: res.data
+        searchResponseData: res.data,
       }))
       .then(console.log('destination submit response', this.state[name]))
       // .then(() => {
@@ -142,19 +146,6 @@ class Map extends React.Component {
       displayBottomDestinationData: false
     })
   }
-  // handleClear() {
-  //   if(this.formdata !== false) {
-  //     this.setState({
-  //       isSearchTriggered: false,
-  //       searchResponseData: searchReponseStateDefault,
-  //       formData: '',
-  //       bottomDestinationData: ''
-  //     })
-  //   } else {
-  //     console.log('formdata empty')
-  //   }
-  // }
-
 
   destinationDropDownData(data) {
     this.setState({
@@ -163,6 +154,14 @@ class Map extends React.Component {
       destinationData: data,
       destinationLonLat: data.center,
       bottomDestinationData: data.place_name,
+      viewport: {
+        ...this.state.viewport,
+        longitude: data.center[0],
+        latitude: data.center[1],
+        transitionInterpolator: new LinearInterpolator(),
+        transitionDuration: 1000
+      },
+
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
@@ -179,10 +178,17 @@ class Map extends React.Component {
       displayDirectionsDisplay: true,
       originData: data,
       originLonLat: data.center,
+      viewport: {
+        ...this.state.viewport,
+        longitude: data.center[0],
+        latitude: data.center[1],
+        transitionInterpolator: new LinearInterpolator(),
+        transitionDuration: 1000
+      },
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
-    this.sendDestinationToBackend(data.center)
+    // this.sendDestinationToBackend(data.center)
     console.log('originDropDownData data.center', data.center)
   }
 
@@ -234,7 +240,7 @@ class Map extends React.Component {
   }
 
   render () {
-    const {viewport, originDrop, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance} = this.state
+    const {viewport, originDrop, formData, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displayDirectionsDisplay, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, originLonLat, destinationLonLat, parksWithinPerpDistance} = this.state
     let dropDownIndexNumber = 0
     const directionsLayer = {routeGeometry}
     return (
@@ -244,6 +250,8 @@ class Map extends React.Component {
         </div>
         <div className="mapcontainer">
           <ReactMapGl {...viewport}
+            height='100vh'
+            width='100vw'
             mapboxApiAccessToken={process.env.MAPBOX_TOKEN}
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
             onViewportChange={viewport => this.setState({viewport})}
@@ -269,6 +277,12 @@ class Map extends React.Component {
               <NavigationControl/>
             </div>
           </ReactMapGl>
+          {originLonLat && destinationLonLat &&
+            <DecideToQueryMapboxDirections
+              originLonLat={originLonLat}
+              destinationLonLat={destinationLonLat}
+              onsendDestinationToBackend={this.sendDestinationToBackend}/>
+          }
           <div className="bodyContainer">
             {displayDirectionsDisplay &&
               <DirectionsDisplay
@@ -320,7 +334,7 @@ class Map extends React.Component {
                     index={index}
                     dropDownDisplayName={element.place_name}
                     searchResponseData={searchResponseData}
-                    selectDestination={isdestinationFormDataSearchTriggered ? this.destinationDropDownData :this.originDropDownData}
+                    selectDestination={this.destinationDropDownData}
                     isSearchTriggered={isSearchTriggered}
                   />
                 )}
@@ -362,6 +376,14 @@ class Map extends React.Component {
 
 export default Map
 
+// selectDestination={isdestinationFormDataSearchTriggered ? this.destinationDropDownData :this.originDropDownData}
+
+// {originLonLat && destinationLonLat &&
+//   <DecideToQueryMapboxDirections
+//     originLonLat={originLonLat}
+//     destinationLonLat={destinationLonLat}
+//     sendDestinationToBackend={this.sendDestinationToBackend}/>
+// }
 
 
 // {displayDirectionsDisplay &&
