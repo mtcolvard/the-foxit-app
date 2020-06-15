@@ -1,4 +1,3 @@
-import React, {useMemo} from 'react'
 import ReactMapGl, {MapGl, BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import axios from 'axios'
@@ -7,7 +6,16 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import DropDownDisplay from './DropDownDisplay'
 import DirectionsDisplay from './DirectionsDisplay'
 import SearchBar from './SearchBar'
-import DecideToQueryMapboxDirections from './DecideToQueryMapboxDirections'
+
+import React, {useMemo} from 'react'
+// import DecideToQueryMapboxDirections from './DecideToQueryMapboxDirections'
+// {originLonLat && destinationLonLat &&
+//   <DecideToQueryMapboxDirections
+//     originLonLat={originLonLat}
+//     destinationLonLat={destinationLonLat}
+//     onsendDestinationToBackend={this.sendDestinationToBackend}/>
+// }
+
 
 // import Marker from './Marker'
 import Pins from './Pins'
@@ -277,12 +285,6 @@ class Map extends React.Component {
               <NavigationControl/>
             </div>
           </ReactMapGl>
-          {originLonLat && destinationLonLat &&
-            <DecideToQueryMapboxDirections
-              originLonLat={originLonLat}
-              destinationLonLat={destinationLonLat}
-              onsendDestinationToBackend={this.sendDestinationToBackend}/>
-          }
           <div className="bodyContainer">
             {displayDirectionsDisplay &&
               <DirectionsDisplay
