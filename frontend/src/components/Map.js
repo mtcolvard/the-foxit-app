@@ -4,10 +4,11 @@ import axios from 'axios'
 import 'mapbox-gl/dist/mapbox-gl.css'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
 import DropDownDisplay from './DropDownDisplay'
+import HookDropDownDisplay from './HookDropDownDisplay'
 import DirectionsDisplay from './DirectionsDisplay'
 import SearchBar from './SearchBar'
 
-import React, {useMemo} from 'react'
+import React from 'react'
 // import DecideToQueryMapboxDirections from './DecideToQueryMapboxDirections'
 // {originLonLat && destinationLonLat &&
 //   <DecideToQueryMapboxDirections
@@ -106,10 +107,12 @@ class Map extends React.Component {
     this.findMyLocation = this.findMyLocation.bind(this)
     this.chooseLocationOnMap = this.chooseLocationOnMap.bind(this)
 
-    this.deselectDirectionsDisplay = this.deselectDirectionsDisplay.bind(this)
+    this.handleDirectionsArrowLeftClick = this.handleDirectionsArrowLeftClick.bind(this)
     this.originSearchMenu = this.originSearchMenu.bind(this)
     // this.getWalkingRoute = this.getWalkingRoute.bind(this)
   }
+
+
 
   handleMouseDown( {lngLat} ) {
     this.setState({viewport: {
@@ -136,14 +139,14 @@ class Map extends React.Component {
       .then(res => this.setState({
         isSearchTriggered: true,
         [searchName]: true,
-        searchResponseData: res.data,
+        searchResponseData: res.data
       }))
       .then(console.log('destination submit response', this.state[name]))
-      // .then(() => {
-      //   if (this.state.originData && this.state.destinationData) {
-      //     this.sendDestinationToBackend()
-      //   }
-      // })
+      .then(() => {
+        if (this.state.originData && this.state.destinationData) {
+          this.sendDestinationToBackend()
+        }
+      })
   }
 
   handleClear(name) {
@@ -154,6 +157,30 @@ class Map extends React.Component {
       displayBottomDestinationData: false
     })
   }
+  //
+
+  // HOOK VERSION
+  // destinationDropDownData(data) {
+  //   this.setState({
+  //     isdestinationFormDataSearchTriggered: false,
+  //     displayBottomDestinationData: true,
+  //     destinationData: data,
+  //     destinationLonLat: data.center,
+  //     bottomDestinationData: data.place_name,
+  //     viewport: {
+  //       ...this.state.viewport,
+  //       longitude: data.center[0],
+  //       latitude: data.center[1],
+  //       transitionInterpolator: new LinearInterpolator(),
+  //       transitionDuration: 1000
+  //     },
+  //
+  //     searchResponseData: searchReponseStateDefault,
+  //     routeGeometry: routeGeometryStateDefault
+  //   })
+  //   // this.sendDestinationToBackend(data.center)
+  //   console.log('destinationDropDownData data.center', data.center)
+  // }
 
   destinationDropDownData(data) {
     this.setState({
@@ -169,14 +196,12 @@ class Map extends React.Component {
         transitionInterpolator: new LinearInterpolator(),
         transitionDuration: 1000
       },
-
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
     // this.sendDestinationToBackend(data.center)
     console.log('destinationDropDownData data.center', data.center)
   }
-
 // DOES THIS NEED PROMISES TO BE SURE STATE IS SET BEFORE sendDestinationToBackend() IS TRIGGERED?
   originDropDownData(data) {
     this.setState({
@@ -211,16 +236,36 @@ class Map extends React.Component {
       .then(console.log('routeLargestPark', this.state.routeLargestPark))
   }
 
+// HOOK VERSION
+  // sendDestinationToBackend(originLonLat, destinationLonLat) {
+  //   axios.get(`api/routethenboundingbox/${originLonLat}/${destinationLonLat}/${this.state.ramblingTolerance}`)
+  //     .then(res => this.setState({
+  //       parksWithinPerpDistance: res.data[0],
+  //       routeGeometry: res.data[0],
+  //       routeLargestPark: res.data[1]
+  //     }))
+  //     .then(console.log('parksWithinPerpDistance', this.state.parksWithinPerpDistance))
+  //     .then(console.log('routeLargestPark', this.state.routeLargestPark))
+  // }
+
   handleDirectionsButtonClick() {
     this.setState({
       displayDirectionsDisplay: true,
       displayDestinationSearchBar: false,
+      displayOriginSearchBar: false,
+      displayOriginSearchDropdown: false,
       displayBottomDestinationData: false
     })
   }
 
-  deselectDirectionsDisplay() {
-    this.setState({ displayDirectionsDisplay: false })
+  handleDirectionsArrowLeftClick() {
+    this.setState({
+      displayDirectionsDisplay: false,
+      displayDestinationSearchBar: true,
+      displayOriginSearchBar: false,
+      displayOriginSearchDropdown: false,
+      displayBottomDestinationData: false
+    })
   }
 
   originSearchMenu() {
@@ -228,7 +273,9 @@ class Map extends React.Component {
       displayDirectionsDisplay: false,
       displayDestinationSearchBar: false,
       displayOriginSearchBar: true,
-      displayOriginSearchDropdown: true})
+      displayOriginSearchDropdown: true,
+      displayBottomDestinationData: true
+    })
   }
 
   destinationSearchMenu() {
@@ -236,7 +283,9 @@ class Map extends React.Component {
       displayDirectionsDisplay: false,
       displayDestinationSearchBar: true,
       displayOriginSearchBar: false,
-      displayOriginSearchDropdown: false})
+      displayOriginSearchDropdown: false,
+      displayBottomDestinationData: false
+    })
   }
 // THIS NEEDS TO RECEIVE THE DATA FROM THE GEOLOCATOR AND IF CLICKED TRIGGER THE GEOLOCATOR
   findMyLocation() {
@@ -290,7 +339,7 @@ class Map extends React.Component {
               <DirectionsDisplay
                 origin={originData.place_name}
                 destination={destinationData.place_name}
-                onArrowLeft={this.deselectDirectionsDisplay}
+                onArrowLeft={this.handleDirectionsArrowLeftClick}
                 onTriggerOriginSearchMenu={this.originSearchMenu}
                 onTriggerDestinationSearchMenu={this.destinationSearchMenu}/>
             }
@@ -377,6 +426,62 @@ class Map extends React.Component {
 }
 
 export default Map
+
+// <HookDropDownDisplay
+//   key={element.id}
+//   index={index}
+//   dropDownDisplayName={element.place_name}
+//   searchResponseData={searchResponseData}
+//   originOrDestinationSearch={'destination'}
+//   isSearchTriggered={isSearchTriggered}
+//   selectDestination={this.destinationDropDownData}
+//   onSendDestinationToBackend={this.sendDestinationToBackend}
+// />
+//
+// <HookDropDownDisplay
+//   key={element.id}
+//   index={index}
+//   dropDownDisplayName={element.place_name}
+//   searchResponseData={searchResponseData}
+//   originOrDestinationSearch={'origin'}
+//   isSearchTriggered={isSearchTriggered}
+//   selectDestination={this.originDropDownData}
+//   onSendDestinationToBackend={this.sendDestinationToBackend}
+// />
+
+
+
+// <div className="dropdown">
+//   <div>
+//     {isSearchTriggered && isdestinationFormDataSearchTriggered && searchResponseData.features.map((element, index) =>
+//       <DropDownDisplay
+//         key={element.id}
+//         index={index}
+//         dropDownDisplayName={element.place_name}
+//         searchResponseData={searchResponseData}
+//         selectDestination={this.destinationDropDownData}
+//         isSearchTriggered={isSearchTriggered}
+//       />
+//     )}
+//   </div>
+// </div>
+
+// <div className="dropdown">
+//   <div>
+//     {isSearchTriggered && isoriginFormDataSearchTriggered && searchResponseData.features.map((element, index) =>
+//       <DropDownDisplay
+//         key={element.id}
+//         index={index}
+//         dropDownDisplayName={element.place_name}
+//         searchResponseData={searchResponseData}
+//         selectDestination={this.originDropDownData}
+//         isSearchTriggered={isSearchTriggered}
+//       />
+//     )}
+//   </div>
+// </div>
+
+
 
 // selectDestination={isdestinationFormDataSearchTriggered ? this.destinationDropDownData :this.originDropDownData}
 

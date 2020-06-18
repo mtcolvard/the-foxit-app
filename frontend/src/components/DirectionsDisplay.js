@@ -26,21 +26,21 @@ class DirectionsDisplay extends React.Component {
     const destination = this.props.destination
     const origin = this.props.origin
     return (
-      <div className="box">
+      <div className="box funbox is-marginless is-radiusless">
         <div className="columns is-mobile">
-          <div className="column">
-            <a className="button is-radiusless" onClick={this.handleArrowLeftClick}>
-              <span className="icon">
-                <FontAwesomeIcon icon="arrow-left" />
-              </span>
-            </a>
+          <div className="column funcolumn is-narrow">
+              <a className="button is-radiusless is-hcentered" onClick={this.handleArrowLeftClick}>
+                <span className="icon">
+                  <FontAwesomeIcon icon="arrow-left" />
+                </span>
+              </a>
           </div>
-          <div className="column is-11">
+          <div className="column centercolumn">
             <div className="field">
               <div className="control">
                 <input
                   readOnly
-                  className="input"
+                  className="input is-radiusless"
                   type="text"
                   placeholder="Choose starting point"
                   value={origin}
@@ -50,7 +50,7 @@ class DirectionsDisplay extends React.Component {
               <div className="control">
                 <input
                   readOnly
-                  className="input"
+                  className="input is-radiusless"
                   type="text"
                   placeholder="Choose destination"
                   value={destination}
@@ -58,6 +58,13 @@ class DirectionsDisplay extends React.Component {
                 />
               </div>
             </div>
+          </div>
+          <div className="column funcolumn is-narrow">
+              <a className="button is-radiusless is-hcentered" onClick={this.handleArrowLeftClick}>
+                <span className="icon">
+                  <FontAwesomeIcon icon="arrow-left" />
+                </span>
+              </a>
           </div>
         </div>
       </div>
