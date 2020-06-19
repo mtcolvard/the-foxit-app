@@ -12,7 +12,7 @@ class SearchBar extends React.Component {
   }
 
   handleArrowLeftClick() {
-    this.props.onArrowLeft()
+    this.props.onArrowLeft(this.props.name)
   }
   handleTimesClick() {
     this.props.onTimes(this.props.name)
@@ -27,10 +27,10 @@ class SearchBar extends React.Component {
 
   render() {
     return(
-      <div className="field has-addons is-marginless" >
+      <div className="field searchfield has-addons is-marginless" >
         <div className="control">
-          <a className="button is-radiusless" onClick={this.handleArrowLeftClick}>
-            <span className="icon">
+          <a className="button" onClick={this.handleArrowLeftClick}>
+            <span className="icon iconbutton">
               <FontAwesomeIcon icon="arrow-left" />
             </span>
           </a>
@@ -49,7 +49,7 @@ class SearchBar extends React.Component {
           </form>
         </div>
         <div className="control">
-          <a className="button is-radiusless" onClick={this.handleTimesClick}>
+          <a className="button iconbutton" onClick={this.handleTimesClick}>
             <span className="icon">
               <FontAwesomeIcon icon="times" />
             </span>

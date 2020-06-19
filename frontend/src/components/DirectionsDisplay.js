@@ -27,13 +27,13 @@ class DirectionsDisplay extends React.Component {
     const origin = this.props.origin
     return (
       <div className="box funbox is-marginless is-radiusless">
-        <div className="columns is-mobile">
+        <div className="columns is-mobile is-vcentered">
           <div className="column funcolumn is-narrow">
-              <a className="button is-radiusless is-hcentered" onClick={this.handleArrowLeftClick}>
-                <span className="icon">
-                  <FontAwesomeIcon icon="arrow-left" />
-                </span>
-              </a>
+            <a className="button iconbutton" onClick={this.handleArrowLeftClick}>
+              <span className="icon">
+                <FontAwesomeIcon icon="arrow-left" />
+              </span>
+            </a>
           </div>
           <div className="column centercolumn">
             <div className="field">
@@ -60,11 +60,11 @@ class DirectionsDisplay extends React.Component {
             </div>
           </div>
           <div className="column funcolumn is-narrow">
-              <a className="button is-radiusless is-hcentered" onClick={this.handleArrowLeftClick}>
-                <span className="icon">
-                  <FontAwesomeIcon icon="arrow-left" />
-                </span>
-              </a>
+            <a className="button iconbutton" onClick={this.handleArrowLeftClick}>
+              <span className="icon">
+                <FontAwesomeIcon icon="arrow-left" />
+              </span>
+            </a>
           </div>
         </div>
       </div>

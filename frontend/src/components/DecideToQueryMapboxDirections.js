@@ -1,7 +1,7 @@
 // import React, { useMemo } from 'react'
 // import Map from './Map'
 //
-// function DecideToQueryMapboxDirections(props) {
+// export default function DecideToQueryMapboxDirections(props) {
 //   const queryMapboxDirection = useMemo(() => props.onsendDestinationToBackend(props.originLonLat, props.destinationLonLat), [props.originLonLat, props.destinationLonLat])
 // }
 //
