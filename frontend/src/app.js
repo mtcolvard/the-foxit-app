@@ -7,7 +7,6 @@ library.add(faArrowLeft, faTimes, faDirections, faLocationArrow, faMapMarkerAlt)
 
 import './scss/style.scss'
 import Map from './components/Map'
-import DropDownDisplay from './components/DropDownDisplay'
 
 class App extends React.Component {
   render () {

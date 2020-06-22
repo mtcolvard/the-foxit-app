@@ -1,23 +1,21 @@
-// import React from 'react'
-//
-// class DisplayRouteCheck extends React.Component{
-//   constructor(){
-//     super()
-//     this.triggerRoute =  this.triggerRoute.bind(this)
-//   }
-//   triggerRoute(){
-// 
-//   }
-//   render() {
-//     return(
-//       <div>
-//
-//       </div>
-//
-//     )
-//   }
-//
-//
-// }
-//
-// export default DisplayRouteCheck
+import React from 'react'
+
+class DisplayRouteCheck extends React.PureComponent{
+  constructor(){
+    super()
+  }
+  componentDidMount() {
+    this.props.sendDestinationToBackend(this.props.originLonLat, this.props.destinationLonLat)
+    console.log('componentDidMount')
+  }
+  componentDidUpdate() {
+    this.props.sendDestinationToBackend(this.props.originLonLat, this.props.destinationLonLat)
+    console.log('componentDidUpdate')
+  }
+
+  render() {
+    return(<div></div>)
+  }
+}
+
+export default DisplayRouteCheck

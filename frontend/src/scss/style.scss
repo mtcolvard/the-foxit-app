@@ -9,12 +9,6 @@ html, body {
   box-sizing: border-box;
 }
 
-
-.title {
-  // position: absolute;
-  padding: 1px;
-}
-
 .funbox {
   padding: 1em 1em 1.25em;
 }
@@ -30,12 +24,15 @@ html, body {
 
 .iconbutton {
   border: 0px;
-
 }
 
 .searchfield {
   padding:0.5em;
   border-radius:1em;
+}
+.title {
+  padding: 1px;
+  background-color: white;
 }
 
 .mapcontainer {
@@ -51,9 +48,10 @@ html, body {
   position:absolute;
   width:100%;
   bottom:0px;
+  padding:0 0 2em 0;
+  border-radius:1em;
+
 }
-
-
 
 .map-marker {
   height: 20px;
