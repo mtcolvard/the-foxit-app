@@ -62,7 +62,7 @@ export default class SearchBarDirections extends React.Component {
           <div className="column funcolumn is-narrow">
             <a className="button iconbutton" onClick={this.handleArrowLeftClick}>
               <span className="icon">
-                <FontAwesomeIcon icon="arrow-left" />
+                <FontAwesomeIcon icon="arrows-alt-v" />
               </span>
             </a>
           </div>

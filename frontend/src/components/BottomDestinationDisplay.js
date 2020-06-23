@@ -12,17 +12,22 @@ export default class BottomDestinationDisplay extends React.Component {
   }
 
   render() {
+    const placeNameStrArray = this.props.destinationData.place_name.split(',')
+    const placeName = placeNameStrArray[0]
+    const placeAddress = placeNameStrArray[1]+', '+placeNameStrArray[2]
     return(
       <div className="bottomFormContainer">
         <div className="box is-radiusless">
-          <p className="button is-static is-fullwidth">{this.props.bottomDestinationData}
-          </p>
-          <button className="button is-info" onClick={this.handleClick} >
-            <span className="icon">
-              <FontAwesomeIcon icon="directions"/>
-            </span>
-            <span>Directions</span>
-          </button>
+          <div className="content">
+            <h4>{placeName}</h4>
+            <p>{placeAddress}</p>
+            <button className="button is-info" onClick={this.handleClick} >
+              <span className="icon">
+                <FontAwesomeIcon icon="directions"/>
+              </span>
+              <span>Directions</span>
+            </button>
+          </div>
         </div>
       </div>
     )

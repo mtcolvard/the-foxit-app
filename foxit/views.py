@@ -220,4 +220,5 @@ class MapGeocoderView(APIView):
         geocoder = Geocoder(name='mapbox.places', access_token='pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZjBoanUzb21jaTkzajZjNWEifQ.ocEzAm8Y7a6im_FVc92HjQ')
         response = geocoder.forward(searchQuery, bbox, country)
         data = response.json()
+        print(data)
         return Response(response.json())

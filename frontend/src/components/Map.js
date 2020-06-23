@@ -1,8 +1,8 @@
 import React from 'react'
-import ReactMapGl, {MapGl, BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import axios from 'axios'
+import ReactMapGl, {MapGl, BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
 
 
@@ -13,7 +13,6 @@ import BottomDestinationDisplay from './BottomDestinationDisplay'
 import DisplayRouteCheck  from './DisplayRouteCheck'
 
 // import HookDropDownDisplay from './HookDropDownDisplay'
-// import Marker from './Marker'
 import Pins from './Pins'
 
 const geolocateStyle = {
@@ -30,7 +29,7 @@ const navigationControlStyle = {
   margin: 10
 }
 
-const lngLat = [-0.084254, 51.518961]
+const lngLat = [-0.097865, 51.514014]
 const routeGeometryStateDefault = {
   'type': 'Feature',
   'properties': {'name': null},
@@ -54,9 +53,10 @@ class Map extends React.Component {
 
     this.state = {
       ramblingTolerance: 500,
-      isSearchTriggered: false,
-      isoriginFormDataSearchTriggered: false,
-      isdestinationFormDataSearchTriggered: false,
+      originFormData: '',
+      destinationFormData: '',
+      originData: '',
+      destinationData: '',
       originLonLat: null,
       destinationLonLat: null,
       routeGeometry: routeGeometryStateDefault,
@@ -65,17 +65,15 @@ class Map extends React.Component {
       viewport: {
         longitude: lngLat[0],
         latitude: lngLat[1],
-        zoom: 12},
-      originFormData: '',
-      destinationFormData: '',
-      bottomDestinationData: '',
-      destinationData: '',
-      originData: '',
+        zoom: 11},
       searchResponseData: {
         type: null,
         query: [null],
         features: [{place_type: [null]}],
         attribution: null},
+      isSearchTriggered: false,
+      isoriginFormDataSearchTriggered: false,
+      isdestinationFormDataSearchTriggered: false,
       displaySearchBarDirections: false,
       displayOriginSearchBar: false,
       displayOriginSearchDropdown: false,
@@ -213,10 +211,10 @@ class Map extends React.Component {
       displayBottomDestinationData: true,
       destinationData: data,
       destinationLonLat: data.center,
-      bottomDestinationData: data.place_name,
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
+    console.log(this.state.destinationData)
     // this.sendDestinationToBackend(data.center)
   }
 // DOES THIS NEED PROMISES TO BE SURE STATE IS SET BEFORE sendDestinationToBackend() IS TRIGGERED?
@@ -232,7 +230,6 @@ class Map extends React.Component {
       searchResponseData: searchReponseStateDefault,
       routeGeometry: routeGeometryStateDefault
     })
-    console.log(this.state.originLonLat)
     // this.sendDestinationToBackend(data.center)
   }
 
@@ -248,8 +245,11 @@ class Map extends React.Component {
       .then(console.log('routeLargestPark', this.state.routeLargestPark))
   }
 
+
+
+
   render () {
-    const {viewport, originFormData, destinationFormData, bottomDestinationData, originData, destinationData, displaySearchBarDirections, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance, originLonLat, destinationLonLat} = this.state
+    const {viewport, originFormData, destinationFormData, originData, destinationData, displaySearchBarDirections, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance, originLonLat, destinationLonLat} = this.state
     const directionsLayer = {routeGeometry}
     return (
       <div>
@@ -261,6 +261,12 @@ class Map extends React.Component {
             mapStyle="mapbox://styles/mtcolvard/ck0wmzhqq0cpu1cqo0uhf1shn"
             onViewportChange={viewport => this.setState({viewport})}
             onClick={this.handleMouseDown}>
+            {destinationLonLat &&
+              <Pins
+                originData={originData}
+                destinationData={destinationData}
+              />
+            }
             {routeGeometry &&
               <Source id="my-data" type="geojson" data={routeGeometry}>
                 <Layer
@@ -282,6 +288,7 @@ class Map extends React.Component {
               <NavigationControl/>
             </div>
           </ReactMapGl>
+
           {originLonLat && destinationLonLat &&
             <DisplayRouteCheck
               originLonLat={originLonLat}
@@ -368,7 +375,7 @@ class Map extends React.Component {
           {displayBottomDestinationData &&
             <BottomDestinationDisplay
               onHandleDirectionsButtonClick={this.handleDirectionsButtonClick}
-              bottomDestinationData={bottomDestinationData}
+              destinationData={destinationData}
             />
           }
         </div>
@@ -485,3 +492,4 @@ export default Map
 //     {...point}
 //   />
 // ))}
+// { test: /\.svg$/, loader: 'svg-inline-loader'}
