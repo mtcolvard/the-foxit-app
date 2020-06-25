@@ -15,7 +15,7 @@ export default class BottomDestinationDisplay extends React.Component {
   // {routeLargestPark && <p>Via {routeLargestPark}</p>}
 
   render() {
-    const {isRouteSelected, routeLargestPark, destinationData, routeDistance, routeDuration} = this.props
+    const {isRouteSelected, routeLargestPark, destinationData, routeDistance} = this.props
     const routeDistanceFormatted = (routeDistance/1000).toFixed(2)
     const placeNameStrArray = destinationData.place_name.split(',')
     const placeName = placeNameStrArray[0]

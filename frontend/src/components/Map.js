@@ -1,6 +1,6 @@
 import React from 'react'
 import axios from 'axios'
-import ReactMapGl, {MapGl, BaseControl, NavigationControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
+import ReactMapGl, {MapGl, BaseControl, NavigationControl, ScaleControl, GeolocateControl, LinearInterpolator, FlyToInterpolator, HTMLOverlay, Layer, Source} from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import MapboxGeocoder from 'mapbox-gl-geocoder'
@@ -15,19 +15,7 @@ import DisplayRouteCheck  from './DisplayRouteCheck'
 // import HookDropDownDisplay from './HookDropDownDisplay'
 import Pins from './Pins'
 
-const geolocateStyle = {
-  position: 'absolute',
-  bottom: 300,
-  right: 0,
-  margin: 10
-}
 
-const navigationControlStyle = {
-  position: 'absolute',
-  right: 0,
-  bottom: 200,
-  margin: 10
-}
 
 const lngLat = [-0.097865, 51.514014]
 const routeGeometryStateDefault = {
@@ -65,7 +53,8 @@ class Map extends React.Component {
       viewport: {
         longitude: lngLat[0],
         latitude: lngLat[1],
-        zoom: 11},
+        zoom: 11,
+        altitude: 0},
       searchResponseData: {
         type: null,
         query: [null],
@@ -260,6 +249,7 @@ class Map extends React.Component {
       <div>
         <div className="mapcontainer">
           <ReactMapGl {...viewport}
+            maxTileCacheSize={10}
             height='100vh'
             width='100vw'
             mapboxApiAccessToken={process.env.MAPBOX_TOKEN}
@@ -283,14 +273,23 @@ class Map extends React.Component {
             }
             <div>
               <GeolocateControl
-                style={geolocateStyle}
-                positionOptions={{enableHighAccuracy: true}}
+                style={ {position: 'absolute', bottom: 300, right: 0, margin: 10} }
+                positionOptions={{enableHighAccuracy: true, timeout: 6000}}
                 trackUserLocation={true}
+                showAccuracyCircle={true}
+                showUserLocation={true}
                 captureClick={false}
+                fitBoundsOption={{maxZoom: 11}}
               />
             </div>
-            <div style={navigationControlStyle}>
-              <NavigationControl/>
+            <div
+              style={ {position: 'absolute', right: 0, bottom: 200, margin: 10} }>
+              <NavigationControl
+                visualizePitch={true}/>
+            </div>
+            <div
+              style={ {position: 'absolute', bottom: 35, left: 10} }>
+              <ScaleControl maxWidth={100} unit={'metric'}/>
             </div>
           </ReactMapGl>
 
@@ -382,7 +381,6 @@ class Map extends React.Component {
               onHandleDirectionsButtonClick={this.handleDirectionsButtonClick}
               destinationData={destinationData}
               routeDistance={routeGeometry['properties']['distance']}
-              routeDuration={routeGeometry['properties']['duration']}
               routeLargestPark={routeLargestPark}
               isRouteSelected={isRouteSelected}
             />
