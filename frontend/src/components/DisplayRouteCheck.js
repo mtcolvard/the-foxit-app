@@ -5,12 +5,12 @@ class DisplayRouteCheck extends React.PureComponent{
     super()
   }
   componentDidMount() {
-    this.props.sendDestinationToBackend(this.props.originLonLat, this.props.destinationLonLat)
     console.log('componentDidMount')
+    this.props.sendDestinationToBackend(this.props.originLonLat, this.props.destinationLonLat)
   }
   componentDidUpdate() {
-    this.props.sendDestinationToBackend(this.props.originLonLat, this.props.destinationLonLat)
     console.log('componentDidUpdate')
+    this.props.sendDestinationToBackend(this.props.originLonLat, this.props.destinationLonLat)
   }
 
   render() {

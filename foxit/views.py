@@ -95,11 +95,8 @@ class RouteThenBoundingBox(APIView):
         total_dict_lon_lat = [current_waypoint_lon_lat]+[x['lon_lat'] for x in total_dict_sorted_by_distance_from_origin.values()]+[destination_lon_lat]
         # total_dict_lon_lat = [current_waypoint_lon_lat]+[destination_lon_lat]
 
-
         routeGeometry = DirectionsCalculations.returnRouteGeometry(self, total_dict_lon_lat)
         largestPark = parks_within_perp_distance[largest_park_key]
-
-
 
         return Response([routeGeometry, largestPark])
 

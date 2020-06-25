@@ -74,6 +74,7 @@ class Map extends React.Component {
       isSearchTriggered: false,
       isoriginFormDataSearchTriggered: false,
       isdestinationFormDataSearchTriggered: false,
+      isRouteSelected: false,
       displaySearchBarDirections: false,
       displayOriginSearchBar: false,
       displayOriginSearchDropdown: false,
@@ -190,7 +191,8 @@ class Map extends React.Component {
       displayDestinationSearchBar: false,
       displayOriginSearchBar: true,
       displayOriginSearchDropdown: true,
-      displayBottomDestinationData: true
+      displayBottomDestinationData: false,
+      isRouteSelected: false
     })
   }
 
@@ -200,7 +202,8 @@ class Map extends React.Component {
       displayDestinationSearchBar: true,
       displayOriginSearchBar: false,
       displayOriginSearchDropdown: false,
-      displayBottomDestinationData: false
+      displayBottomDestinationData: false,
+      isRouteSelected: false
     })
   }
 
@@ -239,7 +242,9 @@ class Map extends React.Component {
       .then(res => this.setState({
         parksWithinPerpDistance: res.data[0],
         routeGeometry: res.data[0],
-        routeLargestPark: res.data[1]
+        routeLargestPark: res.data[1]['name'],
+        isRouteSelected: true,
+        displayBottomDestinationData: true
       }))
       .then(console.log('parksWithinPerpDistance', this.state.parksWithinPerpDistance))
       .then(console.log('routeLargestPark', this.state.routeLargestPark))
@@ -249,7 +254,7 @@ class Map extends React.Component {
 
 
   render () {
-    const {viewport, originFormData, destinationFormData, originData, destinationData, displaySearchBarDirections, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance, originLonLat, destinationLonLat} = this.state
+    const {viewport, originFormData, destinationFormData, originData, destinationData, displaySearchBarDirections, displayOriginSearchDropdown, displayOriginSearchBar, displayDestinationSearchBar, displayBottomDestinationData, searchResponseData, isSearchTriggered, isdestinationFormDataSearchTriggered, isoriginFormDataSearchTriggered, routeGeometry, parksWithinPerpDistance, originLonLat, destinationLonLat, routeLargestPark, isRouteSelected} = this.state
     const directionsLayer = {routeGeometry}
     return (
       <div>
@@ -376,6 +381,10 @@ class Map extends React.Component {
             <BottomDestinationDisplay
               onHandleDirectionsButtonClick={this.handleDirectionsButtonClick}
               destinationData={destinationData}
+              routeDistance={routeGeometry['properties']['distance']}
+              routeDuration={routeGeometry['properties']['duration']}
+              routeLargestPark={routeLargestPark}
+              isRouteSelected={isRouteSelected}
             />
           }
         </div>
