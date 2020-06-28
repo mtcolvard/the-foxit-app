@@ -4,7 +4,7 @@ service = Directions(access_token='pk.eyJ1IjoibXRjb2x2YXJkIiwiYSI6ImNrMDgzYndkZj
 
 class DirectionsCalculations:
     def returnRouteGeometry(self, waypoints_list):
-        response = service.directions(waypoints_list, profile='mapbox/walking', walkway_bias=1, alley_bias=1)
+        response = service.directions(waypoints_list, profile='mapbox/walking', walkway_bias=1, alley_bias=1, continue_straight=True)
         data = response.geojson()
         # print('DirectionsCalulations', data['features'])
         print('DirectionsCalulations', data)

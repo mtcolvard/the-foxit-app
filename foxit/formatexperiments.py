@@ -1,3 +1,39 @@
+{2742: {'id': 2742, 'name': "St Leonard's Churchyard Garden", 'lon_lat': [-0.078398576235896, 51.526564010284], 'crowflys_distance_and_bearing': {'from_origin': (992.1765901319018, -0.5309903149903885), 'from_largest_park': (2979.1029859380824, 2.478309281617023)}, 'distance_from_bestfit_line': {'origin_to_destination': 38.33872261654564, 'to_largest_park': 97.99680038277992, 'from_largest_park': 1086.4371953359314}, 'size_in_hectares': 0.4},
+
+1810: {'id': 1810, 'name': 'Hoxton Square', 'lon_lat': [-0.082682760333115, 51.527533378947], 'crowflys_distance_and_bearing': {'from_origin': (1251.4704653980025, -0.6922625234486998), 'from_largest_park': (2716.8955459271106, 2.5399113115733734)}, 'distance_from_bestfit_line': {'origin_to_destination': 153.0729831560848, 'to_largest_park': 77.96788859261402, 'from_largest_park': 833.1931154476198}, 'size_in_hectares': 0.247},
+
+919: {'id': 919, 'name': 'Aske Gardens', 'lon_lat': [-0.08412343783119, 51.527556921105], 'crowflys_distance_and_bearing': {'from_origin': (1319.2477542651075, -0.7491740870349751), 'from_largest_park': (2659.5729583173647, 2.570258085230248)}, 'distance_from_bestfit_line': {'origin_to_destination': 235.5783608039522, 'to_largest_park': 156.9515711916467, 'from_largest_park': 738.4296785634264}, 'size_in_hectares': 0.0},
+
+2717: {'id': 2717, 'name': "St John's Garden", 'lon_lat': [-0.084010256091586, 51.530252837485], 'crowflys_distance_and_bearing': {'from_origin': (1547.6902939512752, -0.6131163456986846), 'from_largest_park': (2417.4840750708754, 2.5004517106097386)}, 'distance_from_bestfit_line': {'origin_to_destination': 67.26523079783026, 'to_largest_park': 26.007375115870655, 'from_largest_park': 831.5681313424468}, 'size_in_hectares': 0.405},
+
+2522: {'id': 2522, 'name': 'Shoreditch Park', 'lon_lat': [-0.086741077265125, 51.533894432244], 'crowflys_distance_and_bearing': {'from_origin': (1989.095645242285, -0.5735915113666911), 'from_largest_park': (1982.0413255551598, 2.454679637614273)}, 'distance_from_bestfit_line': {'origin_to_destination': 7.857994783747947, 'to_largest_park': 111.98575193603776, 'from_largest_park': 766.22634074925}, 'size_in_hectares': 4.1},
+
+-0.092467046844893, 51.534886945957
+51.535793637199,-0.0923714624199
+-0.092467046844893,51.534886945957
+
+
+906: {'id': 906, 'name': 'Arlington Square', 'lon_lat': [-0.092467046844893, 51.534886945957], 'crowflys_distance_and_bearing': {'from_origin': (2312.9172293437077, -0.6917709241872393), 'from_largest_park': (1662.4795269595845, 2.597309691743875)}, 'distance_from_bestfit_line': {'origin_to_destination': 281.7747874050368, 'to_largest_park': 142.96226946017336, 'from_largest_park': 418.2188362726818}, 'size_in_hectares': 0.36},
+
+3107: {'id': 3107, 'name': 'Wilton Square', 'lon_lat': [-0.090950930538576, 51.536660786627], 'crowflys_distance_and_bearing': {'from_origin': (2406.7499436093053, -0.6058221869063969), 'from_largest_park': (1559.843317084427, 2.474021677597637)}, 'distance_from_bestfit_line': {'origin_to_destination': 87.0601568697888, 'to_largest_park': 57.99451247841599, 'from_largest_park': 575.0751873145114}, 'size_in_hectares': 0.13},
+
+2667: {'id': 2667, 'name': 'St James Close and Clothworkers Almshouses', 'lon_lat': [-0.095236336036252, 51.537629707617], 'crowflys_distance_and_bearing': {'from_origin': (2670.3733674340588, -0.6741127667904466), 'from_largest_park': (1302.4034035164575, 2.6019127839108673)}, 'distance_from_bestfit_line': {'origin_to_destination': 278.47151598129557, 'to_largest_park': 117.96976798224924, 'from_largest_park': 321.83116166244935}, 'size_in_hectares': 0.0},
+
+1134: {'id': 1134, 'name': 'Canonbury Tower, Canonbury Estate', 'lon_lat': [-0.097856067313369, 51.543966982094], 'crowflys_distance_and_bearing': {'from_origin': (3347.2347504481836, -0.5848028531289031), 'from_largest_park': (639.0755160204033, 2.2727234802949425)}, 'distance_from_bestfit_line': {'origin_to_destination': 50.748455501080066, 'to_largest_park': 150.97022640444618, 'from_largest_park': 349.6304850566898}, 'size_in_hectares': 0.0},
+
+1133: {'id': 1133, 'name': 'Canonbury Square', 'lon_lat': [-0.10221709042268, 51.54313836629], 'crowflys_distance_and_bearing': {'from_origin': (3450.2805073040436, -0.6725298202814294), 'from_largest_park': (538.1249912761069, 2.7878346754367693)}, 'distance_from_bestfit_line': {'origin_to_destination': 354.3694072233426, 'to_largest_park': 146.96745934156138, 'from_largest_park': 34.29307270883705}, 'size_in_hectares': 0.24},
+
+1842: {'id': 1842, 'name': 'John Spencer Square', 'lon_lat': [-0.10070106726214, 51.544912331693], 'crowflys_distance_and_bearing': {'from_origin': (3545.1159372489797, -0.6146911536137517), 'from_largest_park': (423.5661546266649, 2.3833970599463457)}, 'distance_from_bestfit_line': {'origin_to_destination': 159.65412647039196, 'to_largest_park': 53.98993947067252, 'from_largest_park': 191.15018923210215}, 'size_in_hectares': 0.0},
+
+1284: {'id': 1284, 'name': 'Compton Terrace Garden', 'lon_lat': [-0.10358355191767, 51.544958966906], 'crowflys_distance_and_bearing': {'from_origin': (3667.8577798030146, -0.6582731624626765), 'from_largest_park': (316.0270263840633, 2.846469121555866)}, 'distance_from_bestfit_line': {'origin_to_destination': 324.66482986134, 'to_largest_park': 103.9772968745068, 'from_largest_park': 1.6230230375375152}, 'size_in_hectares': 0.38},
+
+1748: {'id': 1748, 'name': 'Highbury Roundabout and Highbury Corner Garden', 'lon_lat': [-0.10354618646758, 51.545857613343], 'crowflys_distance_and_bearing': {'from_origin': (3745.8280024928613, -0.6413982424599437), 'from_largest_park': (223.40993564033468, 2.704845839806117)}, 'distance_from_bestfit_line': {'origin_to_destination': 268.55980812620845, 'to_largest_park': 42.990351018136764, 'from_largest_park': 32.669851490206256}, 'size_in_hectares': 0.0},
+
+1744: {'id': 1744, 'name': 'Highbury Fields', 'lon_lat': [-0.10491278007282, 51.547678199045], 'crowflys_distance_and_bearing': {'from_origin': (3964.815941595679, -0.6299211285040349), 'from_largest_park': (0.0, 0.0)}, 'distance_from_bestfit_line': {'origin_to_destination': 238.8550386509668, 'to_largest_park': 0.0, 'from_largest_park': 0.0}, 'size_in_hectares': 11.75}}
+
+
+
+
 DirectionsCalulations
 {'type': 'FeatureCollection',
  'features': [

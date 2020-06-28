@@ -60,6 +60,7 @@ class RouteThenBoundingBox(APIView):
                 size_in_hectares_float = float(size_in_hectares)
             except (TypeError, ValueError):
                 size_in_hectares_float = 0.0
+
             parks_dict[park['id']] = {
             'id':park['id'],
             'name':park['name'],
@@ -67,6 +68,7 @@ class RouteThenBoundingBox(APIView):
             'crowflys_distance_and_bearing': {'from_origin': crowflys_distance_and_bearing},
             'distance_from_bestfit_line': {'origin_to_destination': DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_origin_to_destination, crowflys_distance_and_bearing)},
             'size_in_hectares': size_in_hectares_float}
+
         parks_within_perp_distance = self.parks_within_perp_distance(parks_dict, 'from_origin', 'origin_to_destination', best_fit_origin_to_destination, rambling_tolerance)
 
         largest_park_key = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
@@ -77,6 +79,7 @@ class RouteThenBoundingBox(APIView):
         best_fit_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, destination_lon_lat)
 
         for k, v in parks_within_perp_distance.items():
+            # just as initially we found the distance and bearing as the crowflys from the origin to each park, we now find the distance and bearing from the largest park on our journey to every park
             crowflys_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, v['lon_lat'])
             perp_distance_origin_to_largest_park = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_to_largest_park, v['crowflys_distance_and_bearing']['from_origin'])
             perp_distance_largest_park_to_destination = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_from_largest_park, crowflys_from_largest_park)
@@ -91,7 +94,7 @@ class RouteThenBoundingBox(APIView):
         total_dict = {**parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination}
 
         total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
-
+        print(total_dict_sorted_by_distance_from_origin)
         total_dict_lon_lat = [current_waypoint_lon_lat]+[x['lon_lat'] for x in total_dict_sorted_by_distance_from_origin.values()]+[destination_lon_lat]
         # total_dict_lon_lat = [current_waypoint_lon_lat]+[destination_lon_lat]
 
