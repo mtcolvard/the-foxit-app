@@ -2,24 +2,26 @@ import re
 import urllib.request
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
-from foxit.models import Location
+# from foxit.models import Location
 
 class Command(BaseCommand):
 
     def scrape_location(self, url):
-        x = urllib.request.urlopen(f'http://www.londongardensonline.org.uk/{url}')
+        x = urllib.request.urlopen(f'https://londongardenstrust.org/conservation/inventory/site-record/?{url}')
+
+        # x = urllib.request.urlopen(f'https://londongardenstrust.org/conservation/inventory/site-record/?ID=BAD001')
 
         # x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?borough=%25&type=%25&keyword=&Submit=Search')
         # print(x.read())
         soup = BeautifulSoup(x, 'html.parser')
 
-        citymapper_href = soup.find(href=re.compile("citymapper")).get('href')
-        citymapper_href_edit1 = citymapper_href.replace('http://citymapper.com/directions?endcoord=', '').split('&', 1)[0].split(',')
-        citymapper_href_edit2 = [float(i) for i in citymapper_href_edit1]
-        citymapper_href_edit2.reverse()
-        citymapper_lon = citymapper_href_edit2[0]
-        citymapper_lat = citymapper_href_edit2[1]
-        citymapper_lon_lat = f'{citymapper_lon},{citymapper_lat}'
+        # citymapper_href = soup.find(href=re.compile("citymapper")).get('href')
+        # citymapper_href_edit1 = citymapper_href.replace('http://citymapper.com/directions?endcoord=', '').split('&', 1)[0].split(',')
+        # citymapper_href_edit2 = [float(i) for i in citymapper_href_edit1]
+        # citymapper_href_edit2.reverse()
+        # citymapper_lon = citymapper_href_edit2[0]
+        # citymapper_lat = citymapper_href_edit2[1]
+        # citymapper_lon_lat = f'{citymapper_lon},{citymapper_lat}'
 
         if soup.find(id='photos') == None:
             image_formatted = 'http://www.londongardensonline.org.uk/images/sitepics/THM033-site.jpg'
@@ -73,26 +75,27 @@ class Command(BaseCommand):
             'special_conditions': special_conditions,
             'facilities': facilities,
             'public_transportation': public_transportation,
-            'lon_lat': citymapper_lon_lat,
-            'lon': citymapper_lon,
-            'lat': citymapper_lat,
+            # 'lon_lat': citymapper_lon_lat,
+            # 'lon': citymapper_lon,
+            # 'lat': citymapper_lat,
             'grid_reference': grid_reference,
             'size_in_hectares': size_in_hectares,
             'image': image_formatted,
             'fuller_information': fuller_information,
             'sources_consulted': sources_consulted,
         }
-
-        location = Location(**data)
-        location.save()
+        # location = Location(**data)
+        print(data)
+        # location.save()
 
 
     def handle(self, *_args, **_options):
-
-        x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?type=%25&keyword=&borough=%25&offset=2400')
-
-        soup = BeautifulSoup(x, 'html.parser')
-
-        for link in soup.nav.find_all('a'):
-            href = link.get('href')
-            self.scrape_location(href)
+        self.scrape_location('ID=BAD001')
+        # x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?type=%25&keyword=&borough=%25&offset=2400')
+        #
+        # soup = BeautifulSoup(x, 'html.parser')
+        #
+        # for link in soup.nav.find_all('a'):
+        #     href = link.get('href')
+        #     href_formatted = href.replace('gardens-online-record.php?','')
+        #     self.scrape_location(href_formatted)
