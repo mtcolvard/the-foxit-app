@@ -1,6 +1,7 @@
 import math
 import requests
 import collections.abc
+from .dijkstraVariation import run_dijkstra
 
 from mapbox import Geocoder
 from rest_framework.response import Response
@@ -38,14 +39,8 @@ class RouteThenBoundingBox(APIView):
             # select parks within users tolerance for rambling
             v['distance_from_bestfit_line'][journey_leg] <= rambling_tolerance and
             v['distance_from_bestfit_line'][journey_leg] >= 0}
-        print(len(parks_within_perp_distance))
+        # print(len(parks_within_perp_distance))
         return parks_within_perp_distance
-
-    # def minimize_unnecessary_routing(self, total_dict_sorted_by_distance_from_origin):
-    #     total_dict_unnecessary_routing_removed = {
-    #     k:v for (k,v) in total_dict_sorted_by_distance_from_origin.items() if
-    #
-    #     }
 
     def get(self, _request, currentWaypoint, destination, ramblingTolerance):
         rambling_tolerance = int(ramblingTolerance)
@@ -79,7 +74,7 @@ class RouteThenBoundingBox(APIView):
 
         largest_park_key = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
         largest_park_lon_lat = parks_within_perp_distance[largest_park_key]['lon_lat']
-        print('largest park name', parks_within_perp_distance[largest_park_key])
+        # print('largest park name', parks_within_perp_distance[largest_park_key])
 
         best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_lon_lat, largest_park_lon_lat)
         best_fit_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, destination_lon_lat)
@@ -102,16 +97,20 @@ class RouteThenBoundingBox(APIView):
         total_dict = {**parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination}
 
         total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
-        print(total_dict_sorted_by_distance_from_origin)
+        print('total_dict_sorted_by_distance_from_origin', total_dict_sorted_by_distance_from_origin)
+
+        this_example = run_dijkstra(total_dict_sorted_by_distance_from_origin)
+        print('this_example', this_example)
 
         total_dict_lon_lat = [current_waypoint_lon_lat]+[x['lon_lat'] for x in total_dict_sorted_by_distance_from_origin.values()]+[destination_lon_lat]
-
-
+        # print('total_dict_lon_lat', total_dict_lon_lat)
 
         routeGeometry = DirectionsCalculations.returnRouteGeometry(self, total_dict_lon_lat)
         largestPark = parks_within_perp_distance[largest_park_key]
 
         return Response([routeGeometry, largestPark])
+
+
 
 # parks_within_perp_distance_largest_park_to_destination_list + parks_within_perp_distance_origin_to_largest_park_list
 # YOU SHOULD PRIORITIZE PARKS WITH THE GREATEST AREA.
