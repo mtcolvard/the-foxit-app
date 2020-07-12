@@ -1,12 +1,12 @@
 from .distanceAndBearingCalcs import DistanceAndBearing
 
-total_dict = {}
-graph_nodes = list(total_dict.keys())
-infinity = float('inf')
-waypoints_graph = {}
-waypoints_costs = {}
-waypoints_parents = {}
-waypoints_processed = []
+# total_dict = {}
+# graph_nodes = list(total_dict.keys())
+# infinity = float('inf')
+# waypoints_graph = {}
+# waypoints_costs = {}
+# waypoints_parents = {}
+# waypoints_processed = []
 
 def create_waypoints_graph():
     count = 0
@@ -33,8 +33,15 @@ def populate_waypoints_graph_distances():
     create_waypoints_graph()
     for k, v in waypoints_graph.items():
         for key, value in v.items():
-            dist_from_current_waypoint_coord = DistanceAndBearing.crowflys_bearing(self, total_dict[k]['lon_lat'], value)[0]
+            dist_from_current_waypoint_coord = DistanceAndBearing.crowflys_bearing(key, total_dict[k]['lon_lat'], value)[0]
             v.update({key: dist_from_current_waypoint_coord})
+
+    print(total_dict)
+    print(graph_nodes)
+    print(waypoints_graph)
+    print(waypoints_costs)
+    print(waypoints_parents)
+    print(waypoints_processed)
 
     waypoints_costs[graph_nodes[1]] = waypoints_graph[graph_nodes[0]][graph_nodes[1]]
     waypoints_costs[graph_nodes[2]] = waypoints_graph[graph_nodes[0]][graph_nodes[2]]
@@ -57,8 +64,14 @@ def find_lowest_cost_node():
     return lowest_cost_node
 
 def run_dijkstra(total_dict_sorted_by_distance):
-    global total_dict
+    global total_dict, graph_nodes, infinity, waypoints_graph, waypoints_costs, waypoints_parents, waypoints_processed
     total_dict = total_dict_sorted_by_distance
+    graph_nodes = list(total_dict.keys())
+    infinity = float('inf')
+    waypoints_graph = {}
+    waypoints_costs = {}
+    waypoints_parents = {}
+    waypoints_processed = []
     populate_waypoints_graph_distances()
     node = find_lowest_cost_node()
     while node is not None:
