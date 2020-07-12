@@ -94,7 +94,7 @@ class RouteThenBoundingBox(APIView):
 
         parks_within_perp_distance_largest_park_to_destination = self.parks_within_perp_distance(parks_within_perp_distance, 'from_largest_park', 'from_largest_park', best_fit_from_largest_park, rambling_tolerance/3)
 
-        total_dict = {**parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination}
+        total_dict = {'start': {'lon_lat': current_waypoint_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': (0, 0)}}, **parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination}
 
         total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
         print('total_dict_sorted_by_distance_from_origin', total_dict_sorted_by_distance_from_origin)
