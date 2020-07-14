@@ -10,11 +10,6 @@ def run_dijkstra(total_dict_sorted_by_distance):
     global total_dict, graph_nodes
     total_dict = total_dict_sorted_by_distance
     graph_nodes = list(total_dict.keys())
-    # infinity = float('inf')
-    # waypoints_graph = {}
-    # waypoints_costs = {}
-    # waypoints_parents = {}
-    # waypoints_processed = []
     populate_waypoints_graph_distances()
     node = find_lowest_cost_node()
     while node is not None:
@@ -40,10 +35,10 @@ def populate_waypoints_graph_distances():
 
     waypoints_costs[graph_nodes[1]] = waypoints_graph[graph_nodes[0]][graph_nodes[1]]
     waypoints_costs[graph_nodes[2]] = waypoints_graph[graph_nodes[0]][graph_nodes[2]]
-    waypoints_costs[graph_nodes[3]] = waypoints_graph[graph_nodes[0]][graph_nodes[3]]
+    # waypoints_costs[graph_nodes[3]] = waypoints_graph[graph_nodes[0]][graph_nodes[3]]
     waypoints_parents[graph_nodes[1]] = graph_nodes[0]
     waypoints_parents[graph_nodes[2]] = graph_nodes[0]
-    waypoints_parents[graph_nodes[3]] = graph_nodes[0]
+    # waypoints_parents[graph_nodes[3]] = graph_nodes[0]
 
     print(waypoints_graph, waypoints_costs, waypoints_parents)
     return waypoints_graph, waypoints_costs, waypoints_parents
@@ -58,7 +53,7 @@ def create_waypoints_graph():
         if len(graph_nodes) -3 > count:
             waypoints_graph[node][graph_nodes[count + 1]] = total_dict[graph_nodes[count + 1]]['lon_lat']
             waypoints_graph[node][graph_nodes[count + 2]] = total_dict[graph_nodes[count + 2]]['lon_lat']
-            waypoints_graph[node][graph_nodes[count + 3]] = total_dict[graph_nodes[count + 3]]['lon_lat']
+            # waypoints_graph[node][graph_nodes[count + 3]] = total_dict[graph_nodes[count + 3]]['lon_lat']
             count = count + 1
         elif len(graph_nodes) - 2 > count:
             waypoints_graph[node][graph_nodes[count + 1]] = total_dict[graph_nodes[count + 1]]['lon_lat']
@@ -68,7 +63,7 @@ def create_waypoints_graph():
             waypoints_graph[node][graph_nodes[count + 1]] = total_dict[graph_nodes[count + 1]]['lon_lat']
             count = count + 1
     return waypoints_graph, waypoints_costs, waypoints_parents
-
+        
 def find_lowest_cost_node():
     lowest_cost = float('inf')
     lowest_cost_node = None
