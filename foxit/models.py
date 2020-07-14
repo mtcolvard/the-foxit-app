@@ -11,7 +11,7 @@ class Location(models.Model):
     date = models.CharField(max_length=30, null='')
     designer = models.CharField(max_length=50, null='')
     listed_structures = models.CharField(max_length=150, null='')
-    borough = models.CharField(max_length=30, null='')
+    borough = models.CharField(max_length=50, null='')
     site_ownership = models.CharField(max_length=50, null='')
     site_management = models.CharField(max_length=50, null='')
     open_to_public = models.CharField(max_length=10, null='')
@@ -22,10 +22,10 @@ class Location(models.Model):
     lon_lat = models.CharField(max_length=100, null='')
     lon = models.FloatField(null=True)
     lat = models.FloatField(null=True)
-    grid_reference = models.CharField(max_length=30, null='')
+    grid_reference = models.CharField(max_length=36, null='')
     size_in_hectares = models.CharField(max_length=100, null='')
     image = models.CharField(max_length=250, null='')
-    fuller_information = models.TextField(max_length=10000, null='')
+    fuller_information = models.TextField(max_length=20000, null='')
     sources_consulted = models.TextField(max_length=1000, null='')
 
     def __str__(self):

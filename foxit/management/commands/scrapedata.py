@@ -93,7 +93,7 @@ class Command(BaseCommand):
 
 
     def handle(self, *_args, **_options):
-        x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?type=%25&keyword=&borough=%25&offset=2400')
+        x = urllib.request.urlopen('http://www.londongardensonline.org.uk/search-advanced-results.php?type=%25&keyword=&borough=%25&offset=0')
 
         soup = BeautifulSoup(x, 'html.parser')
 
