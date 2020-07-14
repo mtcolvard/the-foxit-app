@@ -1,7 +1,6 @@
 import math
 import requests
 import collections.abc
-from .dijkstraVariation import run_dijkstra
 
 from mapbox import Geocoder
 from rest_framework.response import Response
@@ -17,6 +16,7 @@ from .serializers import LocationSerializer, BoundingBoxSerializer
 from .mapboxMatrixAPI import MatrixCalculations
 from .mapboxDirectionsAPI import DirectionsCalculations
 from .distanceAndBearingCalcs import DistanceAndBearing
+from .homingAlgo import run_homing_algo
 
 
 class LocationList(ListCreateAPIView):
@@ -31,12 +31,12 @@ class RouteThenBoundingBox(APIView):
     def calculate_parks_within_perp_distance(self, parks_dict, orientation, journey_leg, best_fit, rambling_tolerance):
         parks_within_perp_distance = {
         k:v for (k, v) in parks_dict.items() if
-# ----- select only parks within ± 45 degrees of inital bearing towards destination -----------------------
+            # select only parks within ± 45 degrees of inital bearing towards destination
             v['crowflys_distance_and_bearing'][orientation][1] < (best_fit[1] + math.pi/4) and
             v['crowflys_distance_and_bearing'][orientation][1] > (best_fit[1] - math.pi/4) and
-# ----- select only parks closer than the crowflys distance from origin to destination ----------------------
+            # select only parks within the radius from origin to destination 
             v['crowflys_distance_and_bearing'][orientation][0] < best_fit[0] and
-# ----- select parks within user's tolerance for rambling ---------------------------------------------------
+            # select parks within user's tolerance for rambling
             v['distance_from_bestfit_line'][journey_leg] <= rambling_tolerance and
             v['distance_from_bestfit_line'][journey_leg] >= 0}
         return parks_within_perp_distance
@@ -71,52 +71,16 @@ class RouteThenBoundingBox(APIView):
 
         parks_within_perp_distance = self.calculate_parks_within_perp_distance(parks_dict, 'from_origin', 'origin_to_destination', best_fit_origin_to_destination, rambling_tolerance)
 
+        largestPark = parks_within_perp_distance[max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])]
 
-        largest_park_key = max(parks_within_perp_distance, key=lambda v: parks_within_perp_distance[v]['size_in_hectares'])
-        largest_park_lon_lat = parks_within_perp_distance[largest_park_key]['lon_lat']
-        best_fit_to_largest_park = DistanceAndBearing.crowflys_bearing(self, current_waypoint_lon_lat, largest_park_lon_lat)
-        best_fit_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, destination_lon_lat)
+        total_waypoints_dict = {'origin': {'lon_lat': current_waypoint_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': (0, 0)}}, **parks_within_perp_distance, 'destination': {'lon_lat': destination_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': best_fit_origin_to_destination}}}
 
-        for k, v in parks_within_perp_distance.items():
-            # just as initially we found the distance and bearing as the crowflys from the origin to each park, we now find the distance and bearing from the largest park on our journey to every park
-            crowflys_from_largest_park = DistanceAndBearing.crowflys_bearing(self, largest_park_lon_lat, v['lon_lat'])
+        # Run the homingAlgo.py module to filter and sort the parks to generate the route
+        waypoint_route_order = run_homing_algo(total_waypoints_dict)
+        route_waypoints_lon_lat = [total_waypoints_dict[x]['lon_lat'] for x in waypoint_route_order]
 
-            perp_distance_origin_to_largest_park = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_to_largest_park, v['crowflys_distance_and_bearing']['from_origin'])
-
-            perp_distance_largest_park_to_destination = DistanceAndBearing.perpendicular_distance_from_bestfit_line(self, best_fit_from_largest_park, crowflys_from_largest_park)
-
-            v.update({'crowflys_distance_and_bearing':{'from_origin': v['crowflys_distance_and_bearing']['from_origin'], 'from_largest_park': crowflys_from_largest_park},
-            'distance_from_bestfit_line':{'origin_to_destination': v['distance_from_bestfit_line']['origin_to_destination'], 'to_largest_park': perp_distance_origin_to_largest_park, 'from_largest_park': perp_distance_largest_park_to_destination}})
-
-        parks_within_perp_distance_origin_to_largest_park = self.calculate_parks_within_perp_distance(parks_within_perp_distance, 'from_origin', 'to_largest_park', best_fit_to_largest_park, rambling_tolerance/3)
-
-        parks_within_perp_distance_largest_park_to_destination = self.calculate_parks_within_perp_distance(parks_within_perp_distance, 'from_largest_park', 'from_largest_park', best_fit_from_largest_park, rambling_tolerance/3)
-
-        # total_dict = {**parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination}
-        # total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
-        # print('total_dict_sorted_by_distance_from_origin', total_dict_sorted_by_distance_from_origin)
-        # total_dict_lon_lat = [current_waypoint_lon_lat]+[x['lon_lat'] for x in total_dict_sorted_by_distance_from_origin.values()]+[destination_lon_lat]
-
-        # total_dict = {'origin': {'lon_lat': current_waypoint_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': (0, 0)}}, **parks_within_perp_distance_origin_to_largest_park, **parks_within_perp_distance_largest_park_to_destination, 'destination': {'lon_lat': destination_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': best_fit_origin_to_destination}}}
-        # total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
-
-        # dijkstra_path = run_dijkstra(total_dict_sorted_by_distance_from_origin)
-        # dijkstra_path_lon_lat = [total_dict[x]['lon_lat'] for x in dijkstra_path]
-        # total_dict_lon_lat = [current_waypoint_lon_lat] + dijkstra_path_lon_lat + [destination_lon_lat]
-        # print('dijkstra_path', dijkstra_path)
-# TEMP +++++++++++++++++++++++++++++++++++++
-        temp_total_dict = {'origin': {'lon_lat': current_waypoint_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': (0, 0)}}, **parks_within_perp_distance, 'destination': {'lon_lat': destination_lon_lat, 'crowflys_distance_and_bearing': {'from_origin': best_fit_origin_to_destination}}}
-        total_dict_sorted_by_distance_from_origin = {k: v for k, v in sorted(total_dict.items(), key=lambda item: item[1]['crowflys_distance_and_bearing']['from_origin'][0])}
-        print(temp_total_dict)
-
-
-        temp_path = ['origin', 1040, 2742, 2717, 2522, 3107, 900, 1134, 1842, 1744, 'destination']
-        temp_path_lon_lat = [temp_total_dict[x]['lon_lat'] for x in temp_path]
-        total_dict_lon_lat = [current_waypoint_lon_lat] + temp_path_lon_lat + [destination_lon_lat]
-
-
-        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, total_dict_lon_lat)
-        largestPark = parks_within_perp_distance[largest_park_key]
+        # Request the route directions from mapboxDirectionsAPI.py module
+        routeGeometry = DirectionsCalculations.returnRouteGeometry(self, route_waypoints_lon_lat)
 
         return Response([routeGeometry, largestPark])
 
